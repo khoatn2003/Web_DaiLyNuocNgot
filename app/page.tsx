@@ -1,65 +1,120 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+export default function HomePage() {
+  const phone = "0987654321"; // đổi số của bạn
+  const zaloLink = `https://zalo.me/${phone}`;
+
+  const products = [
+    { name: "Coca-Cola", price: "10.000đ / lon", note: "Mát lạnh, dễ bán" },
+    { name: "Pepsi", price: "10.000đ / lon", note: "Hàng phổ biến" },
+    { name: "Sting Dâu", price: "11.000đ / chai", note: "Năng lượng" },
+    { name: "Aquafina", price: "6.000đ / chai", note: "Nước suối" },
+  ];
+console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
+    <main className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="border-b">
+        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+          <div className="font-bold text-lg">Đại lý Nước Ngọt Châu Khê</div>
+           <h1>Trang chủ</h1>
+            <Link href="/san-pham">Xem sản phẩm</Link>
+          <div className="flex gap-2">
             <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              href={`tel:${phone}`}
+              className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
+              Gọi ngay
+            </a>
+            
             <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              href={zaloLink}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg bg-black px-4 py-2 text-sm text-white hover:opacity-90"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Chat Zalo
+            </a>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+      </header>
+
+      {/* Hero */}
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <h1 className="text-3xl md:text-4xl font-bold">
+          Nước ngọt sỉ & lẻ – giao nhanh khu vực Từ Sơn, Bắc Ninh
+        </h1>
+        <p className="mt-3 text-gray-600 max-w-2xl">
+          Chuyên các loại nước ngọt, nước suối, nước tăng lực. Khách cần mua liên
+          hệ qua điện thoại hoặc Zalo để chốt đơn nhanh.
+        </p>
+
+        <div className="mt-6 flex flex-wrap gap-3">
           <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`tel:${phone}`}
+            className="rounded-xl bg-black px-5 py-3 text-white hover:opacity-90"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
+            Gọi đặt hàng
           </a>
           <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            href={zaloLink}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noreferrer"
+            className="rounded-xl border px-5 py-3 hover:bg-gray-50"
           >
-            Documentation
+            Nhắn Zalo
           </a>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Products */}
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-2xl font-semibold">Sản phẩm nổi bật</h2>
+          <p className="text-sm text-gray-500">Giá tham khảo – liên hệ để báo sỉ</p>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {products.map((p) => (
+            <div
+              key={p.name}
+              className="rounded-2xl border p-4 hover:shadow-sm transition"
+            >
+              <div className="h-32 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
+                Ảnh sản phẩm
+              </div>
+              <div className="mt-3 font-semibold">{p.name}</div>
+              <div className="text-sm text-gray-600">{p.price}</div>
+              <div className="mt-2 text-xs text-gray-500">{p.note}</div>
+
+              <div className="mt-4 flex gap-2">
+                <a
+                  href={zaloLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 rounded-xl bg-black px-3 py-2 text-center text-sm text-white hover:opacity-90"
+                >
+                  Hỏi giá
+                </a>
+                <a
+                  href={`tel:${phone}`}
+                  className="flex-1 rounded-xl border px-3 py-2 text-center text-sm hover:bg-gray-50"
+                >
+                  Gọi
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t">
+        <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-gray-600">
+          Địa chỉ: Châu Khê – Từ Sơn – Bắc Ninh • Hotline/Zalo: {phone}
+        </div>
+      </footer>
+    </main>
   );
 }
