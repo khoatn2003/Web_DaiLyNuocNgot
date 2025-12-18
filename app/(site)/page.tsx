@@ -23,7 +23,7 @@ console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
  <section className="relative w-full h-[260px] sm:h-[360px] md:h-[450px] lg:h-[520px]">
       {/* TỈ LỆ ẢNH BANNER 1920 X 600 */}
         <Image
-          src="/images/banner2.png"
+          src="/images/banner4.png"
           alt="Banner"
           fill
           priority

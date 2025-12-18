@@ -29,7 +29,8 @@ export default function SiteHeader({
           <div className="truncate">
             Chất lượng và <b>Niềm tin</b>
           </div>
-
+          {/* RIGHT */}
+        <div className="flex items-center">
           <div className="hidden sm:flex items-center gap-5">
             <Link href="/gioi-thieu" className="hover:underline underline-offset-4">
               Luôn là đại lý mang lại tiềm tin tới khách hàng
@@ -40,8 +41,8 @@ export default function SiteHeader({
             <Link href="/san-pham" className="hover:underline underline-offset-4">
               Cửa hàng
             </Link>
-
-            <div className="flex items-center gap-3 pl-2">
+          </div>
+             <div className="flex items-center gap-3 sm:pl-3">
               {/* icon search */}
               <button
                 className="p-1.5 rounded hover:bg-white/10"
