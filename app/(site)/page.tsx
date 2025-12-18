@@ -1,7 +1,9 @@
+import SiteHeader from "@/components/SiteHeader";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
-  const phone = "0987654321"; // đổi số của bạn
+  const phone = "0377165869"; // đổi số của bạn
   const zaloLink = `https://zalo.me/${phone}`;
 
   const products = [
@@ -13,61 +15,47 @@ export default function HomePage() {
 console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
   return (
+    <>
+    {/* Header */}
+    {/* <SiteHeader phone={phone} zaloLink={zaloLink} /> */}
     <main className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b">
-        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-          <div className="font-bold text-lg">Đại lý Nước Ngọt Châu Khê</div>
-           <h1>Trang chủ</h1>
-            <Link href="/san-pham">Xem sản phẩm</Link>
-          <div className="flex gap-2">
-            <a
-              href={`tel:${phone}`}
-              className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
+      {/* Banner */}
+ <section className="relative w-full h-[260px] sm:h-[360px] md:h-[450px] lg:h-[520px]">
+      {/* TỈ LỆ ẢNH BANNER 1920 X 600 */}
+        <Image
+          src="/images/banner2.png"
+          alt="Banner"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+
+        {/* (Tuỳ chọn) overlay chữ + nút */}
+        <div className="absolute inset-0 bg-black/20" />
+
+        <div className="absolute inset-0 flex items-center justify-center text-center">
+          <div className="px-4 text-white max-w-3xl">
+            <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight leading-tight">
+              Nước ngọt sỉ & lẻ – giao nhanh khu vực Từ Sơn, Bắc Ninh
+            </h1>
+
+            <p className="mt-4 text-sm md:text-lg opacity-90 leading-relaxed">
+              Chuyên các loại nước ngọt, nước suối, nước tăng lực,.. Khách cần mua liên hệ qua
+              điện thoại hoặc Zalo để chốt đơn nhanh cho em nha.
+            </p>
+
+            <Link
+              href="/san-pham"
+              className="mt-6 inline-flex items-center justify-center rounded-full bg-white/95 text-black px-7 py-3 font-semibold shadow hover:bg-white transition"
             >
-              Gọi ngay
-            </a>
-            
-            <a
-              href={zaloLink}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-lg bg-black px-4 py-2 text-sm text-white hover:opacity-90"
-            >
-              Chat Zalo
-            </a>
+              Xem sản phẩm
+            </Link>
           </div>
         </div>
-      </header>
 
-      {/* Hero */}
-      <section className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="text-3xl md:text-4xl font-bold">
-          Nước ngọt sỉ & lẻ – giao nhanh khu vực Từ Sơn, Bắc Ninh
-        </h1>
-        <p className="mt-3 text-gray-600 max-w-2xl">
-          Chuyên các loại nước ngọt, nước suối, nước tăng lực. Khách cần mua liên
-          hệ qua điện thoại hoặc Zalo để chốt đơn nhanh.
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <a
-            href={`tel:${phone}`}
-            className="rounded-xl bg-black px-5 py-3 text-white hover:opacity-90"
-          >
-            Gọi đặt hàng
-          </a>
-          <a
-            href={zaloLink}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl border px-5 py-3 hover:bg-gray-50"
-          >
-            Nhắn Zalo
-          </a>
-        </div>
       </section>
-
+      {/* Hero */} 
       {/* Products */}
       <section className="mx-auto max-w-6xl px-4 pb-12">
         <div className="flex items-end justify-between gap-4">
@@ -109,12 +97,7 @@ console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t">
-        <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-gray-600">
-          Địa chỉ: Châu Khê – Từ Sơn – Bắc Ninh • Hotline/Zalo: {phone}
-        </div>
-      </footer>
     </main>
+    </>
   );
 }

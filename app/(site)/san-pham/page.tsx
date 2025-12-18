@@ -1,10 +1,13 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
+import SiteHeader from "@/components/SiteHeader";
 
 export default async function ProductsPage() {
   noStore(); // để khách thấy cập nhật ngay
-
+  const phone = "0377165869"; // đổi số của bạn   
+ const zaloLink = `https://zalo.me/${phone}`;    
+ 
   const { data: products, error } = await supabase
     .from("products")
     .select("id,slug,name,brand,packaging,price,image_url")
@@ -14,6 +17,7 @@ export default async function ProductsPage() {
   if (error) return <div>Lỗi tải sản phẩm: {error.message}</div>;
 
   return (
+    <>
     <main className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Sản phẩm</h1>
 
@@ -30,5 +34,6 @@ export default async function ProductsPage() {
         ))}
       </div>
     </main>
+    </>
   );
 }

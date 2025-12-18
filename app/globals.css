@@ -19,6 +19,26 @@
   }
 }
 
+@keyframes phone-ring {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(12deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(6deg); }
+  60% { transform: rotate(-6deg); }
+  70%, 100% { transform: rotate(0); }
+}
+
+.phone-ring {
+  transform-origin: 50% 50%;
+  animation: phone-ring 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phone-ring { animation: none; }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
