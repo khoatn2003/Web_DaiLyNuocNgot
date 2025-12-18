@@ -13,10 +13,15 @@ export default function SiteHeader({
   zaloLink: string;
 }) {
   const [open, setOpen] = useState(false);
+const productMenu = [
+  { href: "/san-pham/nuoc-ngot", label: "Nước ngọt" },
+  { href: "/san-pham/nuoc-suoi", label: "Bia" },
+  { href: "/san-pham/nuoc-tang-luc", label: "Nước tăng lực" },
+];
 
   const nav = [
     { href: "/", label: "Trang chủ" },
-    { href: "/san-pham", label: "Sản phẩm" },
+    { href: "/san-pham", label: "Sản phẩm",children: productMenu },
     { href: "/gioi-thieu", label: "Giới thiệu" },
     { href: "/lien-he", label: "Liên hệ" },
   ];
@@ -120,10 +125,60 @@ export default function SiteHeader({
 
             <span>ĐẠI LÝ NƯỚC NGỌT TIẾN MẠO</span>
           </Link>
-
           {/* Menu desktop */}
           <nav className="hidden md:flex items-center gap-7 text-sm">
-            {nav.map((i) => (
+          {nav.map((i) =>
+            i.children ? (
+            <div
+              key={i.href}
+              className="relative group
+                        after:content-[''] after:absolute after:left-0 after:top-full
+                        after:h-3 after:w-56 after:bg-transparent after:pointer-events-auto"
+            >
+              {/* Nút cha */}
+              <Link
+                href={i.href}
+                className="inline-flex items-center gap-1 hover:opacity-90 hover:underline underline-offset-8"
+              >
+                {i.label}
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="opacity-90 transition group-hover:rotate-180"
+                >
+                  <path
+                    d="M6 9l6 6 6-6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </Link>
+
+              {/* Menu con */}
+              <ul
+                className="absolute left-0 top-full mt-3 w-56 rounded-xl bg-white text-slate-900
+                          shadow-xl ring-1 ring-black/10 overflow-hidden z-50
+                          invisible opacity-0 translate-y-1
+                          group-hover:visible group-hover:opacity-100 group-hover:translate-y-0
+                          transition"
+              >
+                {i.children.map((c) => (
+                  <li key={c.href}>
+                    <Link
+                      href={c.href}
+                      className="block px-4 py-3 text-sm hover:bg-slate-50"
+                    >
+                      {c.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            ) : (
               <Link
                 key={i.href}
                 href={i.href}
@@ -131,8 +186,9 @@ export default function SiteHeader({
               >
                 {i.label}
               </Link>
-            ))}
-          </nav>
+            )
+          )}
+        </nav>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
