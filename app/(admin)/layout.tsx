@@ -1,38 +1,26 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { SITE } from "@/lib/site";
+import SiteHeader from "@/components/SiteHeader";
 import FloatingContact from "@/components/FloatingContact";
+import SiteFooter from "@/components/SiteFooter";
 
+const phone = "0392048571";
+const zaloLink = `https://zalo.me/${phone}`;
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: SITE.name,
-  description: "Website giới thiệu sản phẩm – liên hệ qua điện thoại hoặc Zalo.",
-};
-
-export default function RootLayout({
-children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-         <FloatingContact />
-      </body>
-    </html>
+    <>
+      {/* <SiteHeader phone={phone} zaloLink={zaloLink} /> */}
+      {children}
+      <FloatingContact />
+      {/* <SiteFooter
+        address="Trịnh Nguyễn - Châu Khê - Từ Sơn- Bắc Ninh."
+        hotline="0392048571"
+        fanpageUrl="https://facebook.com/..."
+        bank={{
+          owner: "Nguyễn Tiến Mạo",
+          accountNumber: "0392048571",
+          bankName: "MBBank - Ngân hàng Thương mại Cổ phần Quân đội",
+        }}
+      /> */}
+    </>
   );
 }
