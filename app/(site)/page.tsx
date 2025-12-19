@@ -1,3 +1,4 @@
+import BannerSlider from "@/components/home/Banner";
 import SiteHeader from "@/components/SiteHeader";
 import { SITE } from "@/lib/site";
 import Image from "next/image";
@@ -11,41 +12,7 @@ export default function HomePage() {
     {/* <SiteHeader phone={phone} zaloLink={zaloLink} /> */}
     <main className="min-h-screen bg-white">
       {/* Banner */}
-      <section className="relative w-full h-[260px] sm:h-[360px] md:h-[450px] lg:h-[520px]">
-      {/* TỈ LỆ ẢNH BANNER 1920 X 600 */}
-        <Image
-          src="/images/banner3.png"
-          alt="Banner"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-
-        {/* (Tuỳ chọn) overlay chữ + nút */}
-        <div className="absolute inset-0 bg-black/20" />
-
-        <div className="absolute inset-0 flex items-center justify-center text-center">
-          <div className="px-4 text-white max-w-3xl">
-            <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight leading-tight">
-              Nước ngọt sỉ & lẻ – giao nhanh khu vực Từ Sơn, Bắc Ninh
-            </h1>
-
-            <p className="mt-4 text-sm md:text-lg opacity-90 leading-relaxed">
-              Chuyên các loại nước ngọt, nước suối, nước tăng lực,.. Khách cần mua liên hệ qua
-              điện thoại hoặc Zalo để chốt đơn nhanh cho em nha.
-            </p>
-
-            <Link
-              href="/san-pham"
-              className="mt-6 inline-flex items-center justify-center rounded-full bg-white/95 text-black px-7 py-3 font-semibold shadow hover:bg-white transition"
-            >
-              Xem sản phẩm
-            </Link>
-          </div>
-        </div>
-
-      </section>
+      <BannerSlider />
       {/* Hero */} 
      {/* Products by Category (giống form Vinamilk) */}
       <section className="bg-[#fbf7ea] border-y border-[#0b2bbf]/30">
@@ -67,6 +34,8 @@ export default function HomePage() {
               Xem tất cả →
             </Link>
           </div>
+         {/* Divider */}
+  <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-[#0b2bbf]/25 to-transparent" />
 
           {/* Danh mục */}
          <div className="mt-10 space-y-12">
@@ -78,32 +47,12 @@ export default function HomePage() {
                   badge: "Bán chạy",
                   name: "Coca-Cola lon",
                   code: "S001",
-                  sub: "Nước ngọt có gas",
                   desc:
                     "Hương vị quen thuộc, giao nhanh. Phù hợp mua theo thùng cho gia đình/quán.",
                   meta: "330ml, Thùng 24 lon",
                   img: "/images/products/biasaigon.jpg",
                 },
-                {
-                  badge: "Giá tốt",
-                  name: "Pepsi lon",
-                  code: "S001",
-                  sub: "Nước ngọt có gas",
-                  desc:
-                    "Mát lạnh, đã khát. Thích hợp cho tiệc tùng, liên hoan, quán ăn.",
-                  meta: "330ml, Thùng 24 lon",
-                  img: "/images/products/biasaigon.jpg",
-                },
-                {
-                  badge: "Ưa chuộng",
-                  name: "7Up lon",
-                  code: "S001",
-                  sub: "Nước ngọt có gas",
-                  desc:
-                    "Vị chanh nhẹ, dễ uống. Hợp dùng kèm đồ ăn nhiều dầu mỡ.",
-                  meta: "330ml, Thùng 24 lon",
-                  img: "/images/products/coca-cola.png",
-                },
+            
               ]}
             />
 
@@ -115,7 +64,6 @@ export default function HomePage() {
                   badge: "Tinh khiết",
                   name: "Aquafina",
                   code: "S001",
-                  sub: "Nước uống đóng chai",
                   desc:
                     "Nước tinh khiết, tiện mang đi. Phù hợp cho văn phòng và sự kiện.",
                   meta: "500ml, Thùng 24 chai",
@@ -125,7 +73,6 @@ export default function HomePage() {
                   badge: "Phổ biến",
                   name: "Lavie",
                   code: "S001",
-                  sub: "Nước khoáng",
                   desc:
                     "Nước khoáng thiên nhiên. Thích hợp dùng hằng ngày, giao nhanh.",
                   meta: "500ml, Thùng 24 chai",
@@ -135,7 +82,6 @@ export default function HomePage() {
                   badge: "Tiện lợi",
                   name: "Nước suối 1.5L",
                   code: "S001",
-                  sub: "Nước uống đóng chai",
                   desc:
                     "Dung tích lớn cho gia đình/quán. Giá tốt khi lấy theo thùng.",
                   meta: "1.5L, Thùng 12 chai",
@@ -153,11 +99,9 @@ export default function HomePage() {
   );
 }
 
-
 // function formatVND(n: number) {
 //   return n.toLocaleString("vi-VN") + "đ";
 // }
-
 function CategoryBlock({
   title,
   href,
@@ -169,7 +113,6 @@ function CategoryBlock({
     badge: string;
     name: string;
     code: string; // thêm mã
-    sub: string;
     desc: string;
     meta: string;
     img: string;
@@ -203,7 +146,6 @@ function ProductCard({
     badge: string;
     name: string;
     code: string; // thêm mã
-    sub: string;
     desc: string;
     meta: string;
     img: string;
@@ -240,9 +182,8 @@ function ProductCard({
 
         {/* Nội dung */}
         <div className="flex grow flex-col px-4">
-          <div className="mt-4 min-h-6 text-xs text-[#0b2bbf]/70">{p.sub}</div>
 
-          <div className="flex items-start justify-between gap-3">
+          <div className="mt-4 flex items-start justify-between gap-3">
             <h3 className="text-base md:text-lg font-extrabold tracking-tight text-[#0b2bbf]">
               {p.name}
             </h3>

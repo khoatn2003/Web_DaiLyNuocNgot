@@ -30,6 +30,7 @@ export type ProductRow = {
   brands?: { name: string; abbr: string | null } | null;
 
   updated_at: string;
+  badge: string | null;
 };
 
 export type ImgRow = {

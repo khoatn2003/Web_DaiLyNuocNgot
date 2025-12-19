@@ -10,7 +10,6 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
     <>
       {/* <SiteHeader phone={phone} zaloLink={zaloLink} /> */}
       {children}
-      <FloatingContact />
       {/* <SiteFooter
         address="Trịnh Nguyễn - Châu Khê - Từ Sơn- Bắc Ninh."
         hotline="0392048571"

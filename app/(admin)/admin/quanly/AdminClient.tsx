@@ -65,16 +65,16 @@ useEffect(() => {
   async function loadProducts() {
     setBusy(true);
     const { data, error } = await supabase
-      .from("products")
-      .select(`
-        id, code, slug, name, price, is_active, in_stock, featured, featured_order,
+        .from("products")
+        .select(`
+        id, code, slug, name, badge, price, is_active, in_stock, featured, featured_order,
         description, brand, packaging, image_url,
         packaging_override, package_type, pack_qty, unit, volume_ml,
         category_id, brand_id,
         categories (name, abbr),
         brands (name, abbr),
         updated_at
-      `)
+        `)
       .order("updated_at", { ascending: false });
 
     setBusy(false);
@@ -155,6 +155,8 @@ useEffect(() => {
       featured: form.featured ?? false,
       featured_order: form.featured_order ?? 0,
       is_active: form.is_active ?? false,
+      badge: form.badge?.trim() || null,
+
     };
 
     // nếu bật is_active mà chưa có code -> DB chặn; UI cũng chặn trước
@@ -332,7 +334,7 @@ return (
         <div className={`ml-auto flex items-center gap-2 text-sm ${cls.muted}`}>
           <span className="hidden sm:inline">{email}</span>
 
-          {/* ✅ Toggle theme */}
+          {/* Toggle theme */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className={`rounded-lg border px-3 py-1.5 ${cls.btnOutline}`}
@@ -449,6 +451,7 @@ return (
                             <span className="inline-flex items-center gap-2">
                               <Chip theme={theme} tone={p.is_active ? "green" : "zinc"}>{status}</Chip>
                               {p.featured && <Chip theme={theme} tone="amber">Nổi bật</Chip>}
+                              {p.badge && <Chip theme={theme} tone="amber">{p.badge}</Chip>}
                             </span>
                           </td>
                           <td className="px-3 py-2 text-right">
@@ -499,7 +502,6 @@ return (
     {/* Modal create/edit */}
     {open && (
       <ProductModal
-        theme={theme}
         cls={cls}
         cats={cats}
         brs={brs}
@@ -596,7 +598,6 @@ function Chip({
 
 
 function ProductModal({
-  theme,
   cls,
   cats,
   brs,
@@ -609,7 +610,6 @@ function ProductModal({
   onPrimary,
   onDeleteImage,
 }: {
-  theme: "dark" | "light";
   cls: any;
   cats: Category[];
   brs: Brand[];
@@ -639,6 +639,7 @@ function ProductModal({
       pack_qty: null,
       unit: "",
       volume_ml: null,
+      badge: "", 
     }
   );
 
@@ -674,7 +675,12 @@ function ProductModal({
               value={form.slug ?? ""}
               onChange={(e) => setForm({ ...form, slug: e.target.value })}
             />
-
+            <input
+                className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+                placeholder="Badge (vd: Bán chạy / Phổ biến / Mới về)"
+                value={(form.badge ?? "") as any}
+                onChange={(e) => setForm({ ...form, badge: e.target.value })}
+            />
             <div className="grid grid-cols-2 gap-3">
               <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
                 value={form.category_id ?? ""}
