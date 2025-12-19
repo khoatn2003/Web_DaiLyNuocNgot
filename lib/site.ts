@@ -4,4 +4,5 @@ export const SITE = {
   phone: "0392048571",
   zalo: "0392048571", // thường dùng số điện thoại
   foundedYear: 2010,
+  openHours: "8:00 - 21:00 mỗi ngày",
 };

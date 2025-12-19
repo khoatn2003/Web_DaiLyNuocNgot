@@ -116,10 +116,53 @@ export default function AboutPage() {
                   </li>
                 </ul>
 
-                <div className="mt-5 rounded-2xl bg-white px-4 py-3 text-[#0213b0]">
-                  <div className="text-xs font-semibold uppercase">Hotline</div>
-                  <div className="text-lg font-extrabold">{SITE.phone}</div>
+             <div className="mt-5 rounded-2xl bg-white px-4 py-3 text-[#0213b0]">
+            <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0213b0]/10">
+                {/* Icon điện thoại bàn */}
+                <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                >
+                    <path
+                    d="M6 11c0-3.314 2.686-6 6-6s6 2.686 6 6"
+                    stroke="#0213b0"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    />
+                    <path
+                    d="M5 11h3v4H5c-1 0-2-.8-2-2v0c0-1.2 1-2 2-2Z"
+                    stroke="#0213b0"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                    />
+                    <path
+                    d="M19 11h-3v4h3c1 0 2-.8 2-2v0c0-1.2-1-2-2-2Z"
+                    stroke="#0213b0"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                    />
+                    <path
+                    d="M8 19h8"
+                    stroke="#0213b0"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    />
+                </svg>
                 </div>
+
+                <div>
+                <div className="text-xs font-semibold uppercase">Hotline</div>
+                <a className="text-lg font-extrabold" href={`tel:${SITE.phone}`}>
+                    {SITE.phone}
+                </a>
+                </div>
+            </div>
+            </div>
+
               </div>
             </div>
           </div>

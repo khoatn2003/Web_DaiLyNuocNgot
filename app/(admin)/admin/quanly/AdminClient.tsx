@@ -52,6 +52,15 @@ export default function AdminClient({ email }: { email: string }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+const [theme, setTheme] = useState<"dark" | "light">("dark");
+useEffect(() => {
+  const saved = localStorage.getItem("admin_theme");
+  if (saved === "light" || saved === "dark") setTheme(saved);
+}, []);
+
+useEffect(() => {
+  localStorage.setItem("admin_theme", theme);
+}, [theme]);
 
   async function loadProducts() {
     setBusy(true);
@@ -257,212 +266,338 @@ export default function AdminClient({ email }: { email: string }) {
 
   // ========= CATEGORY/BRAND CRUD (simple) =========
   // ĐÃ CHUYỂN SANG hook/useMeta.ts
-  return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* Top bar */}
-      <div className="sticky top-0 z-20 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-3">
-          <div className="font-semibold">Admin • Đại lý nước ngọt</div>
-          <div className="ml-auto flex items-center gap-2 text-sm text-zinc-400">
-            <span className="hidden sm:inline">{email}</span>
-            <button
-              onClick={logout}
-              className="rounded-lg border border-zinc-800 px-3 py-1.5 hover:bg-zinc-900"
-            >
-              Đăng xuất
-            </button>
-          </div>
+  const cls =
+  theme === "dark"
+    ? {
+        page: "min-h-screen bg-zinc-950 text-zinc-100",
+        topbar: "border-b border-zinc-900 bg-zinc-950/80",
+        panel: "border-zinc-900 bg-zinc-900/40",
+        muted: "text-zinc-400",
+        tip: "text-zinc-500",
+        input: "border-zinc-800 bg-zinc-950 text-zinc-100 placeholder:text-zinc-500",
+        tableWrap: "border-zinc-800",
+        thead: "bg-zinc-950 text-zinc-300",
+        row: "border-t border-zinc-800",
+        btnOutline: "border-zinc-800 hover:bg-zinc-900",
+        toast: "border-zinc-800 bg-zinc-900 text-zinc-100",
+        toastBtn: "text-zinc-300",
+        primaryBtn: "bg-white text-zinc-950 hover:opacity-95",
+
+        // modal
+        overlay: "bg-black/60",
+        modal: "border-zinc-800 bg-zinc-950 text-zinc-100",
+        modalHeader: "border-zinc-900",
+        field: "border-zinc-800 bg-zinc-900/30 text-zinc-100 placeholder:text-zinc-500",
+        card2: "border-zinc-800 bg-zinc-900/20",
+        imgTile: "border-zinc-800 bg-zinc-950",
+        imgBtn: "border-zinc-800 hover:bg-zinc-900",
+        danger: "text-red-300",
+        success: "text-emerald-300",
+        preview: "text-zinc-300",
+      }
+    : {
+        page: "min-h-screen bg-gray-50 text-gray-900",
+        topbar: "border-b border-gray-200 bg-white/80",
+        panel: "border-gray-200 bg-white shadow-sm",
+        muted: "text-gray-600",
+        tip: "text-gray-500",
+        input: "border-gray-200 bg-white text-gray-900 placeholder:text-gray-400",
+        tableWrap: "border-gray-200 bg-white",
+        thead: "bg-gray-50 text-gray-700",
+        row: "border-t border-gray-200",
+        btnOutline: "border-gray-200 hover:bg-gray-50",
+        toast: "border-gray-200 bg-white text-gray-900",
+        toastBtn: "text-gray-700",
+        primaryBtn: "bg-[#0213b0] text-white hover:opacity-95",
+
+        // modal
+        overlay: "bg-black/35",
+        modal: "border-gray-200 bg-white text-gray-900",
+        modalHeader: "border-gray-200",
+        field: "border-gray-200 bg-white text-gray-900 placeholder:text-gray-400",
+        card2: "border-gray-200 bg-gray-50",
+        imgTile: "border-gray-200 bg-white",
+        imgBtn: "border-gray-200 hover:bg-gray-50",
+        danger: "text-red-700",
+        success: "text-emerald-700",
+        preview: "text-gray-700",
+      };
+return (
+  <div className={cls.page}>
+    {/* Top bar */}
+    <div className={`sticky top-0 z-20 ${cls.topbar} backdrop-blur`}>
+      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center gap-3">
+        <div className="font-semibold">Quản trị viên • Đại lý nước ngọt</div>
+
+        <div className={`ml-auto flex items-center gap-2 text-sm ${cls.muted}`}>
+          <span className="hidden sm:inline">{email}</span>
+
+          {/* ✅ Toggle theme */}
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className={`rounded-lg border px-3 py-1.5 ${cls.btnOutline}`}
+            title="Đổi chế độ sáng/tối"
+          >
+            {theme === "dark" ? "☀️ Sáng" : "🌙 Tối"}
+          </button>
+
+          <button
+            onClick={logout}
+            className={`rounded-lg border px-3 py-1.5 ${cls.btnOutline}`}
+          >
+            Đăng xuất
+          </button>
         </div>
       </div>
-
-      {/* Shell */}
-      <div className="mx-auto max-w-6xl px-4 py-6 grid grid-cols-12 gap-4">
-        {/* Sidebar */}
-        <aside className="col-span-12 md:col-span-3">
-          <div className="rounded-2xl border border-zinc-900 bg-zinc-900/40 p-3">
-            <NavButton active={tab === "products"} onClick={() => setTab("products")}>
-              Sản phẩm
-            </NavButton>
-            <NavButton active={tab === "categories"} onClick={() => setTab("categories")}>
-              Danh mục
-            </NavButton>
-            <NavButton active={tab === "brands"} onClick={() => setTab("brands")}>
-              Hãng
-            </NavButton>
-            <div className="mt-3 text-xs text-zinc-500">
-              Tip: sản phẩm chỉ bật hiển thị khi đã có <b>code</b> (chọn danh mục + hãng).
-            </div>
-          </div>
-        </aside>
-
-        {/* Main */}
-        <main className="col-span-12 md:col-span-9">
-          {tab === "products" && (
-            <div className="rounded-2xl border border-zinc-900 bg-zinc-900/40 p-4">
-              <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-                <div>
-                  <div className="text-lg font-semibold">Sản phẩm</div>
-                  <div className="text-sm text-zinc-400">Tạo/sửa/xoá, upload ảnh, set nổi bật.</div>
-                </div>
-
-                <div className="sm:ml-auto flex gap-2">
-                  <input
-                    className="w-full sm:w-64 rounded-xl border border-zinc-800 bg-zinc-950 p-2.5 outline-none"
-                    placeholder="Tìm theo tên / code / slug / hãng…"
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                  />
-                  <button
-                    onClick={openCreate}
-                    className="rounded-xl bg-white text-zinc-950 px-4 py-2.5 font-medium"
-                  >
-                    + Thêm
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-4 overflow-auto rounded-xl border border-zinc-800">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-zinc-950 text-zinc-300">
-                    <tr>
-                      <th className="text-left px-3 py-2">Mã</th>
-                      <th className="text-left px-3 py-2">Tên</th>
-                      <th className="text-left px-3 py-2">Quy cách</th>
-                      <th className="text-left px-3 py-2">Trạng thái</th>
-                      <th className="text-right px-3 py-2">Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {busy ? (
-                      <tr><td className="px-3 py-6 text-zinc-400" colSpan={5}>Đang tải…</td></tr>
-                    ) : filtered.length === 0 ? (
-                      <tr><td className="px-3 py-6 text-zinc-400" colSpan={5}>Chưa có sản phẩm.</td></tr>
-                    ) : (
-                      filtered.map((p) => {
-                        const brandName = p.brands?.name ?? null;
-                        const brand = formatBrand({ brand_name: brandName, brand: p.brand });
-                        const packaging = formatPackaging(p);
-                        const status =
-                          p.is_active ? (p.in_stock ? "Đang bán" : "Đang hết hàng") : "Nháp";
-                        return (
-                          <tr key={p.id} className="border-t border-zinc-800">
-                            <td className="px-3 py-2 font-mono text-xs">{p.code ?? "—"}</td>
-                            <td className="px-3 py-2">
-                              <div className="font-medium">{p.name}</div>
-                              <div className="text-xs text-zinc-400">
-                                {brand ? `${brand} • ` : ""}{p.slug}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 text-zinc-300">{packaging || "—"}</td>
-                            <td className="px-3 py-2">
-                              <span className="inline-flex items-center gap-2">
-                                <Chip tone={p.is_active ? "green" : "zinc"}>{status}</Chip>
-                                {p.featured && <Chip tone="amber">Nổi bật</Chip>}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 text-right">
-                              <button
-                                onClick={() => openEdit(p)}
-                                className="rounded-lg border border-zinc-800 px-3 py-1.5 hover:bg-zinc-900"
-                              >
-                                Sửa
-                              </button>{" "}
-                              <button
-                                onClick={() => removeProduct(p.id)}
-                                className="rounded-lg border border-zinc-800 px-3 py-1.5 hover:bg-zinc-900 text-red-300"
-                              >
-                                Xoá
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {tab === "categories" && (
-            <MetaEditor
-              title="Danh mục"
-              hint="Ví dụ: Bia (BI), Nước ngọt (NG)… Abbr 2 chữ IN HOA để sinh code."
-              onSave={upsertCategory}
-            />
-          )}
-
-          {tab === "brands" && (
-            <MetaEditor
-              title="Hãng"
-              hint="Ví dụ: Sabeco (SA), Coca-Cola (CO)… Abbr 2 chữ IN HOA để sinh code."
-              onSave={upsertBrand}
-            />
-          )}
-        </main>
-      </div>
-
-      {/* Modal create/edit */}
-      {open && (
-        <ProductModal
-          cats={cats}
-          brs={brs}
-          initial={editing}
-          imgs={imgs}
-          imgBusy={imgBusy}
-          onClose={() => setOpen(false)}
-          onSave={saveProduct}
-          onUpload={(productId, files) => uploadImages(productId, files)}
-          onPrimary={(productId, imageId) => setPrimaryImage(productId, imageId)}
-          onDeleteImage={(row) => deleteImage(row)}
-        />
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm shadow">
-          {toast}
-          <button className="ml-3 text-zinc-300" onClick={() => setToast(null)}>OK</button>
-        </div>
-      )}
     </div>
-  );
+
+    {/* Shell */}
+    <div className="mx-auto max-w-6xl px-4 py-6 grid grid-cols-12 gap-4">
+      {/* Sidebar */}
+      <aside className="col-span-12 md:col-span-3">
+        <div className={`rounded-2xl border p-3 ${cls.panel}`}>
+        <NavButton theme={theme} active={tab === "products"} onClick={() => setTab("products")}>
+             Sản phẩm
+        </NavButton>
+
+        <NavButton theme={theme} active={tab === "categories"} onClick={() => setTab("categories")}>
+            Danh mục
+        </NavButton>
+
+        <NavButton theme={theme} active={tab === "brands"} onClick={() => setTab("brands")}>
+            Hãng
+        </NavButton>
+
+          <div className={`mt-3 text-xs ${cls.tip}`}>
+            Tip: sản phẩm chỉ bật hiển thị khi đã có <b>code</b> (chọn danh mục + hãng).
+          </div>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="col-span-12 md:col-span-9">
+        {tab === "products" && (
+          <div className={`rounded-2xl border p-4 ${cls.panel}`}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <div>
+                <div className="text-lg font-semibold">Sản phẩm</div>
+                <div className={`text-sm ${cls.muted}`}>
+                  Tạo/sửa/xoá, upload ảnh, set nổi bật.
+                </div>
+              </div>
+
+              <div className="sm:ml-auto flex gap-2">
+                <input
+                  className={`w-full sm:w-64 rounded-xl border p-2.5 outline-none ${cls.input}`}
+                  placeholder="Tìm theo tên / code / slug / hãng…"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                />
+                <button
+                  onClick={openCreate}
+                  className={`rounded-xl px-4 py-2.5 font-medium ${cls.primaryBtn}`}
+                >
+                  + Thêm
+                </button>
+              </div>
+            </div>
+
+            <div className={`mt-4 overflow-auto rounded-xl border ${cls.tableWrap}`}>
+              <table className="min-w-full text-sm">
+                <thead className={cls.thead}>
+                  <tr>
+                    <th className="text-left px-3 py-2">Mã</th>
+                    <th className="text-left px-3 py-2">Tên</th>
+                    <th className="text-left px-3 py-2">Quy cách</th>
+                    <th className="text-left px-3 py-2">Trạng thái</th>
+                    <th className="text-right px-3 py-2">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {busy ? (
+                    <tr>
+                      <td className={`px-3 py-6 ${cls.muted}`} colSpan={5}>
+                        Đang tải…
+                      </td>
+                    </tr>
+                  ) : filtered.length === 0 ? (
+                    <tr>
+                      <td className={`px-3 py-6 ${cls.muted}`} colSpan={5}>
+                        Chưa có sản phẩm.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((p) => {
+                      const brandName = p.brands?.name ?? null;
+                      const brand = formatBrand({ brand_name: brandName, brand: p.brand });
+                      const packaging = formatPackaging(p);
+                      const status =
+                        p.is_active ? (p.in_stock ? "Đang bán" : "Đang hết hàng") : "Nháp";
+
+                      return (
+                        <tr key={p.id} className={cls.row}>
+                          <td className="px-3 py-2 font-mono text-xs">{p.code ?? "—"}</td>
+                          <td className="px-3 py-2">
+                            <div className="font-medium">{p.name}</div>
+                            <div className={`text-xs ${cls.muted}`}>
+                              {brand ? `${brand} • ` : ""}
+                              {p.slug}
+                            </div>
+                          </td>
+                          <td className="px-3 py-2">{packaging || "—"}</td>
+                          <td className="px-3 py-2">
+                            <span className="inline-flex items-center gap-2">
+                              <Chip theme={theme} tone={p.is_active ? "green" : "zinc"}>{status}</Chip>
+                              {p.featured && <Chip theme={theme} tone="amber">Nổi bật</Chip>}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            <button
+                              onClick={() => openEdit(p)}
+                              className={`rounded-lg border px-3 py-1.5 ${cls.btnOutline}`}
+                            >
+                              Sửa
+                            </button>{" "}
+                            <button
+                              onClick={() => removeProduct(p.id)}
+                              className={`rounded-lg border px-3 py-1.5 ${cls.btnOutline} ${theme === "dark" ? "text-red-300" : "text-red-700"}`}
+                            >
+                              Xoá
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {tab === "categories" && (
+          <MetaEditor
+            title="Danh mục"
+            hint="Ví dụ: Bia (BI), Nước ngọt (NG)… Abbr 2 chữ IN HOA để sinh code."
+            onSave={upsertCategory}
+            theme={theme}
+
+          />
+        )}
+
+        {tab === "brands" && (
+          <MetaEditor
+            title="Hãng"
+            hint="Ví dụ: Sabeco (SA), Coca-Cola (CO)… Abbr 2 chữ IN HOA để sinh code."
+            onSave={upsertBrand}
+            theme={theme}
+          />
+        )}
+      </main>
+    </div>
+
+    {/* Modal create/edit */}
+    {open && (
+      <ProductModal
+        theme={theme}
+        cls={cls}
+        cats={cats}
+        brs={brs}
+        initial={editing}
+        imgs={imgs}
+        imgBusy={imgBusy}
+        onClose={() => setOpen(false)}
+        onSave={saveProduct}
+        onUpload={(productId, files) => uploadImages(productId, files)}
+        onPrimary={(productId, imageId) => setPrimaryImage(productId, imageId)}
+        onDeleteImage={(row) => deleteImage(row)}
+      />
+    )}
+
+    {/* Toast */}
+    {toast && (
+      <div
+        className={`fixed bottom-4 left-1/2 -translate-x-1/2 rounded-xl border px-4 py-2 text-sm shadow ${cls.toast}`}
+      >
+        {toast}
+        <button className={`ml-3 ${cls.toastBtn}`} onClick={() => setToast(null)}>
+          OK
+        </button>
+      </div>
+    )}
+  </div>
+);
+
 }
 
 function NavButton({
   active,
   onClick,
   children,
+  theme,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  theme: "dark" | "light";
 }) {
+  const base = "w-full text-left rounded-xl px-3 py-2.5 border transition";
+
+  const dark = active
+    ? "bg-white text-zinc-950 border-white"
+    : "border-zinc-800 text-zinc-100 hover:bg-zinc-900";
+
+  const light = active
+    ? "bg-[#0213b0] text-white border-[#0213b0]"
+    : "border-gray-200 text-gray-900 hover:bg-gray-50";
+
   return (
-    <button
-      onClick={onClick}
-      className={[
-        "w-full text-left rounded-xl px-3 py-2.5 border",
-        active ? "bg-white text-zinc-950 border-white" : "border-zinc-800 hover:bg-zinc-900",
-      ].join(" ")}
-    >
+    <button onClick={onClick} className={[base, theme === "dark" ? dark : light].join(" ")}>
       {children}
     </button>
   );
 }
 
-function Chip({ tone, children }: { tone: "green" | "amber" | "zinc"; children: React.ReactNode }) {
-  const cls =
+
+function Chip({
+  tone,
+  children,
+  theme,
+}: {
+  tone: "green" | "amber" | "zinc";
+  children: React.ReactNode;
+  theme: "dark" | "light";
+}) {
+  const dark =
     tone === "green"
       ? "bg-emerald-500/15 text-emerald-200 border-emerald-500/30"
       : tone === "amber"
       ? "bg-amber-500/15 text-amber-200 border-amber-500/30"
       : "bg-zinc-500/15 text-zinc-200 border-zinc-500/30";
-  return <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs ${cls}`}>{children}</span>;
+
+  const light =
+    tone === "green"
+      ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+      : tone === "amber"
+      ? "bg-amber-50 text-amber-900 border-amber-200"
+      : "bg-gray-100 text-gray-900 border-gray-200";
+
+  return (
+    <span
+      className={[
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
+        theme === "dark" ? dark : light,
+      ].join(" ")}
+    >
+      {children}
+    </span>
+  );
 }
 
 
 function ProductModal({
+  theme,
+  cls,
   cats,
   brs,
   initial,
@@ -474,6 +609,8 @@ function ProductModal({
   onPrimary,
   onDeleteImage,
 }: {
+  theme: "dark" | "light";
+  cls: any;
   cats: Category[];
   brs: Brand[];
   initial: ProductRow | null;
@@ -510,18 +647,15 @@ function ProductModal({
   const previewPack = formatPackaging(form as any);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 p-4 flex items-center justify-center">
-      <div className="w-full max-w-3xl rounded-2xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-xl overflow-hidden">
-        <div className="p-4 border-b border-zinc-900 flex items-center gap-2">
+    <div className={`fixed inset-0 z-50 ${cls.overlay} p-4 flex items-center justify-center`}>
+        <div className={`w-full max-w-3xl rounded-2xl border shadow-xl overflow-hidden ${cls.modal}`}>
+        <div className={`p-4 border-b flex items-center gap-2 ${cls.modalHeader}`}>
           <div className="font-semibold">{initial ? "Sửa sản phẩm" : "Thêm sản phẩm"}</div>
           <div className="ml-auto flex gap-2">
-            <button onClick={onClose} className="rounded-xl border border-zinc-800 px-3 py-1.5 hover:bg-zinc-900">
+            <button onClick={onClose} className={`rounded-xl border px-3 py-1.5 ${cls.btnOutline}`}>
               Đóng
             </button>
-            <button
-              onClick={() => onSave(form)}
-              className="rounded-xl bg-white text-zinc-950 px-4 py-1.5 font-medium"
-            >
+              <button onClick={() => onSave(form)} className={`rounded-xl px-4 py-1.5 font-medium ${cls.primaryBtn}`}>
               Lưu
             </button>
           </div>
@@ -530,22 +664,19 @@ function ProductModal({
         <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Left: product fields */}
           <div className="space-y-3">
-            <input
-              className="w-full rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+            <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
               placeholder="Tên sản phẩm"
               value={form.name ?? ""}
               onChange={(e) => setForm({ ...form, name: e.target.value, slug: slugify(e.target.value) })}
             />
-            <input
-              className="w-full rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+            <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
               placeholder="Slug (auto theo tên, có thể sửa)"
               value={form.slug ?? ""}
               onChange={(e) => setForm({ ...form, slug: e.target.value })}
             />
 
             <div className="grid grid-cols-2 gap-3">
-              <select
-                className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+              <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
                 value={form.category_id ?? ""}
                 onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}
               >
@@ -557,8 +688,7 @@ function ProductModal({
                 ))}
               </select>
 
-              <select
-                className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+              <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
                 value={form.brand_id ?? ""}
                 onChange={(e) => setForm({ ...form, brand_id: e.target.value || null })}
               >
@@ -573,21 +703,20 @@ function ProductModal({
 
             <div className="grid grid-cols-2 gap-3">
               <input
-                className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+                className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
                 placeholder="Giá (VND) - để trống nếu Liên hệ"
                 value={form.price ?? ""}
                 onChange={(e) => setForm({ ...form, price: e.target.value ? Number(e.target.value) : null })}
               />
               <input
-                className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+                className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
                 placeholder="Thứ tự nổi bật (0..)"
                 value={form.featured_order ?? 0}
                 onChange={(e) => setForm({ ...form, featured_order: Number(e.target.value) || 0 })}
               />
             </div>
 
-            <textarea
-              className="w-full min-h-[90px] rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+            <textarea className={`w-full min-h-[90px] rounded-xl border p-2.5 outline-none ${cls.field}`}
               placeholder="Mô tả"
               value={form.description ?? ""}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -631,20 +760,18 @@ function ProductModal({
               )}
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3">
+            <div className={`rounded-xl border p-3 ${cls.card2}`}>
               <div className="text-sm font-medium">Quy cách</div>
-              <div className="text-xs text-zinc-400 mt-1">Ưu tiên: override → pack chuẩn.</div>
+              <div className={`text-xs mt-1 ${cls.muted}`}>Ưu tiên: override → pack chuẩn.</div>
 
-              <input
-                className="mt-3 w-full rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+              <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
                 placeholder="Override (vd: Két 20 chai thủy tinh 450ml) — để trống nếu dùng pack chuẩn"
                 value={form.packaging_override ?? ""}
                 onChange={(e) => setForm({ ...form, packaging_override: e.target.value })}
               />
 
               <div className="mt-3 grid grid-cols-4 gap-2">
-                <select
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+                <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
                   value={form.package_type ?? ""}
                   onChange={(e) => setForm({ ...form, package_type: e.target.value || null })}
                 >
@@ -655,15 +782,13 @@ function ProductModal({
                   ))}
                 </select>
 
-                <input
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+               <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
                   placeholder="Số lượng"
                   value={form.pack_qty ?? ""}
                   onChange={(e) => setForm({ ...form, pack_qty: e.target.value ? Number(e.target.value) : null })}
                 />
 
-                <select
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+                <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
                   value={form.unit ?? ""}
                   onChange={(e) => setForm({ ...form, unit: e.target.value || null })}
                 >
@@ -674,24 +799,22 @@ function ProductModal({
                   ))}
                 </select>
 
-                <input
-
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-2.5 outline-none"
+                <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
                   placeholder="ml"
                   value={form.volume_ml ?? ""}
                   onChange={(e) => setForm({ ...form, volume_ml: e.target.value ? Number(e.target.value) : null })}
                 />
               </div>
 
-              <div className="mt-2 text-xs text-zinc-300">
-                Preview: <span className="text-zinc-100">{previewPack || "—"}</span>
+              <div className={`mt-2 text-xs ${cls.preview}`}>
+                Preview: <span className={`text-xs ${cls.success}`}>{previewPack || "—"}</span>
               </div>
             </div>
           </div>
 
           {/* Right: images */}
           <div className="space-y-3">
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3">
+            <div className={`rounded-xl border p-3 ${cls.card2}`}>
               <div className="flex items-center">
                 <div className="text-sm font-medium">Ảnh sản phẩm</div>
                 <div className="ml-auto text-xs text-zinc-400">
@@ -718,22 +841,21 @@ function ProductModal({
 
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {imgs.map((im) => (
-                  <div key={im.id} className="rounded-xl border border-zinc-800 overflow-hidden bg-zinc-950">
+                  <div key={im.id} className={`rounded-xl border overflow-hidden ${cls.imgTile}`}>
                     <img src={im.public_url} alt="" className="aspect-square w-full object-cover" />
                     <div className="p-2 flex items-center gap-2">
                       {im.is_primary ? (
-                        <span className="text-xs text-emerald-300">Đại diện</span>
+                        <span className={`text-xs ${cls.success}`}>Đại diện</span>
                       ) : (
                         <button
                           onClick={() => onPrimary(im.product_id, im.id)}
-                          className="text-xs rounded-lg border border-zinc-800 px-2 py-1 hover:bg-zinc-900"
-                        >
+                          className={`text-xs rounded-lg border px-2 py-1 ${cls.imgBtn}`}>
                           Đặt đại diện
                         </button>
                       )}
                       <button
                         onClick={() => onDeleteImage(im)}
-                        className="ml-auto text-xs rounded-lg border border-zinc-800 px-2 py-1 hover:bg-zinc-900 text-red-300"
+                        className={`ml-auto text-xs rounded-lg border px-2 py-1 ${cls.imgBtn} ${cls.danger}`}
                       >
                         Xoá
                       </button>
@@ -747,7 +869,7 @@ function ProductModal({
               )}
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/20 p-3 text-sm">
+            <div className={`rounded-xl border p-3 ${cls.card2}`}>
               <div className="font-medium">Quy ước “không rối”</div>
               <ul className="mt-2 text-zinc-400 list-disc pl-5 space-y-1">
                 <li>Admin chỉ chọn hãng từ dropdown (không nhập brand text).</li>

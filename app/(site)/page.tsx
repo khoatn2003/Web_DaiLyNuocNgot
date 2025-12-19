@@ -4,15 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
-  const phone = "0377165869"; // đổi số của bạn
-  const zaloLink = `https://zalo.me/${phone}`;
-
-  const products = [
-    { name: "Coca-Cola", price: "10.000đ / lon", note: "Mát lạnh, dễ bán" },
-    { name: "Pepsi", price: "10.000đ / lon", note: "Hàng phổ biến" },
-    { name: "Sting Dâu", price: "11.000đ / chai", note: "Năng lượng" },
-    { name: "Aquafina", price: "6.000đ / chai", note: "Nước suối" },
-  ];
 
   return (
     <>
@@ -23,7 +14,7 @@ export default function HomePage() {
       <section className="relative w-full h-[260px] sm:h-[360px] md:h-[450px] lg:h-[520px]">
       {/* TỈ LỆ ẢNH BANNER 1920 X 600 */}
         <Image
-          src="/images/banner4.png"
+          src="/images/banner3.png"
           alt="Banner"
           fill
           priority
@@ -91,7 +82,7 @@ export default function HomePage() {
                   desc:
                     "Hương vị quen thuộc, giao nhanh. Phù hợp mua theo thùng cho gia đình/quán.",
                   meta: "330ml, Thùng 24 lon",
-                  img: "/images/banner.jpg",
+                  img: "/images/products/biasaigon.jpg",
                 },
                 {
                   badge: "Giá tốt",
@@ -128,7 +119,7 @@ export default function HomePage() {
                   desc:
                     "Nước tinh khiết, tiện mang đi. Phù hợp cho văn phòng và sự kiện.",
                   meta: "500ml, Thùng 24 chai",
-                  img: "/images/banner4.png",
+                  img: "/images/products/coca-cola.png",
                 },
                 {
                   badge: "Phổ biến",
@@ -138,7 +129,7 @@ export default function HomePage() {
                   desc:
                     "Nước khoáng thiên nhiên. Thích hợp dùng hằng ngày, giao nhanh.",
                   meta: "500ml, Thùng 24 chai",
-                  img: "/images/banner4.png",
+                  img: "/images/products/biasaigon.jpg",
                 },
                 {
                   badge: "Tiện lợi",
@@ -148,7 +139,7 @@ export default function HomePage() {
                   desc:
                     "Dung tích lớn cho gia đình/quán. Giá tốt khi lấy theo thùng.",
                   meta: "1.5L, Thùng 12 chai",
-                 img: "/images/banner4.png",
+                 img: "/images/products/coca-cola.png",
                 },
               ]}
             />

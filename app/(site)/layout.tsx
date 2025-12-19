@@ -14,7 +14,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <SiteFooter
         address="Trịnh Nguyễn - Châu Khê - Từ Sơn- Bắc Ninh."
         hotline="0392048571"
-        fanpageUrl="https://facebook.com/..."
+        fanpageUrl="https://www.facebook.com/ma.oiano"
         bank={{
           owner: "Nguyễn Tiến Mạo",
           accountNumber: "0392048571",
