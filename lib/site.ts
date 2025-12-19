@@ -3,4 +3,5 @@ export const SITE = {
   address: "Châu Khê, Từ Sơn, Bắc Ninh",
   phone: "0392048571",
   zalo: "0392048571", // thường dùng số điện thoại
+  foundedYear: 2010,
 };

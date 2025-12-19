@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { createSupabaseBrowser } from "@/lib/supabase/client";
 import { SITE } from "@/lib/site";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -9,6 +9,7 @@ export default async function ProductDetail({
 }) {
   noStore();
   const { slug } = await params;
+  const supabase = createSupabaseBrowser();
   const { data: p, error } = await supabase
     .from("products")
     .select("*")

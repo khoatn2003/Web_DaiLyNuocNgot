@@ -1,14 +1,14 @@
 "use client";
 
-import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { createSupabaseBrowser } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
 
 export default function AdminLogin() {
   const router = useRouter();
-
+  const supabase = createSupabaseBrowser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 

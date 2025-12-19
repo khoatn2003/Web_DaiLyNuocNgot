@@ -1,9 +1,10 @@
-import { supabase } from "@/lib/supabase";
+import { createSupabaseBrowser } from "@/lib/supabase/client";
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import SiteHeader from "@/components/SiteHeader";
 
 export default async function ProductsPage() {
+  const supabase = createSupabaseBrowser();
   noStore(); // để khách thấy cập nhật ngay
   const phone = "0377165869"; // đổi số của bạn   
  const zaloLink = `https://zalo.me/${phone}`;    
