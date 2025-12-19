@@ -36,8 +36,8 @@ export default function BannerSlider() {
       {/* Content: mobile đỡ chật -> đẩy xuống + khung mờ */}
       <div className="absolute inset-0 flex items-end sm:items-center justify-center text-center p-4 sm:p-0">
         <div className="max-w-3xl text-white w-full sm:w-auto">
-         <div className="mx-auto rounded-2xl bg-black/35 backdrop-blur-sm px-4 py-4
-                         sm:bg-transparent sm:backdrop-blur-0 sm:px-6 sm:py-5">
+         <div className="mx-auto rounded-2xl bg-black/10 backdrop-blur-sm px-4 py-4
+                        sm:bg-transparent sm:backdrop-blur-0 sm:px-6 sm:py-5">
 
             <h1 className="text-xl sm:text-3xl md:text-5xl font-extrabold tracking-tight leading-snug md:leading-tight">
               Nước ngọt sỉ & lẻ – giao nhanh khu vực Từ Sơn, Bắc Ninh
