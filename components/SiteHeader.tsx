@@ -2,8 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { PhoneCall } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { MapPin, PhoneCall } from "lucide-react";
+
+import { createSupabaseBrowser } from "@/lib/supabase/client";
+import { SITE } from "@/lib/site";
+
 
 export default function SiteHeader({
   phone,
@@ -13,15 +17,46 @@ export default function SiteHeader({
   zaloLink: string;
 }) {
   const [open, setOpen] = useState(false);
-const productMenu = [
-  { href: "/san-pham/nuoc-ngot", label: "Nước ngọt" },
-  { href: "/san-pham/nuoc-suoi", label: "Bia" },
-  { href: "/san-pham/nuoc-tang-luc", label: "Nước tăng lực" },
-];
+  const supabase = useMemo(() => createSupabaseBrowser(), []);
+// const productMenu = [
+//   { href: "/san-pham/nuoc-ngot", label: "Nước ngọt" },
+//   { href: "/san-pham/nuoc-suoi", label: "Bia" },
+//   { href: "/san-pham/nuoc-tang-luc", label: "Nước tăng lực" },
+// ];
+ type MenuItem = { href: string; label: string };
+ const [productMenu, setProductMenu] = useState<MenuItem[]>([]);
+
+  useEffect(() => {
+  const fetchCats = async () => {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("slug,name")
+      .order("name", { ascending: true });
+
+    if (!error && data) {
+      setProductMenu(data.map(c => ({ href: `/san-pham/danh-muc/${c.slug}`, label: c.name })));
+    }
+  };
+
+  fetchCats();
+
+  const channel = supabase
+    .channel("categories-changes")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "categories" },
+      () => fetchCats()
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   const nav = [
     { href: "/", label: "Trang chủ" },
-    { href: "/san-pham", label: "Sản phẩm",children: productMenu },
+    { href: "", label: "Sản phẩm",children: productMenu },
     { href: "/gioi-thieu", label: "Giới thiệu" },
     { href: "/lien-he", label: "Liên hệ" },
   ];
@@ -31,8 +66,17 @@ const productMenu = [
       {/* TOP BAR (giống Vinamilk) */}
       <div className="bg-[#0213b0] text-white">
         <div className="mx-auto max-w-6xl px-4 h-10 flex items-center justify-between text-xs">
-          <div className="truncate">
-            Chất lượng và <b>Niềm tin</b>
+          <div className="min-w-0 flex items-center">
+            <div
+              className="inline-flex items-center gap-2 rounded-full
+                        bg-white/10 ring-1 ring-white/20
+                        px-3 py-1 backdrop-blur-sm"
+            >
+              <MapPin className="h-4 w-4 opacity-90 shrink-0" />
+              <span className="truncate">
+                {SITE.address}
+              </span>
+            </div>
           </div>
           {/* RIGHT */}
         <div className="flex items-center">

@@ -120,7 +120,7 @@ export default function SiteFooter({
 
         {/* Bottom bar */}
         <div className="mt-10 border-t border-white/10 pt-6 text-sm text-white/70">
-          © {new Date().getFullYear()} Đại lý Nước Ngọt Hoa Trường
+          © {new Date().getFullYear()} Công ty TNHH Thương Mại Dịch Vụ Tiến Mạo. All rights
         </div>
       </div>
     </footer>

@@ -3,11 +3,139 @@ import SiteHeader from "@/components/SiteHeader";
 import { SITE } from "@/lib/site";
 import Image from "next/image";
 import Link from "next/link";
+import { createSupabaseServer } from "@/lib/supabase/server";
+import { formatPackaging } from "@/lib/admin-utils";
+import HomeRealtimeRefresh from "@/components/home/HomeRealtimeRefresh";
+export const revalidate = 60;
+type UIProduct = {
+  badge: string | null;
+  name: string;
+  code: string;
+  desc: string;
+  meta: string;
+  img: string;
+  in_stock: boolean;
+  slug: string;
 
-export default function HomePage() {
+};
 
+type UICategoryBlock = {
+  title: string;
+  href: string;
+  products: UIProduct[];
+
+};
+
+async function getHomeCategoryBlocks(): Promise<UICategoryBlock[]> {
+  const supabase = await createSupabaseServer();
+
+  const { data, error } = await supabase
+    .from("products")
+    .select(
+      `
+      id, slug, name, code, description, created_at,
+      is_active, featured, featured_order, in_stock,
+      packaging_override, package_type, pack_qty, unit, volume_ml, packaging,
+      image_url,badge,
+      category:categories ( id, name, slug ),
+      images:product_images ( public_url, alt, is_primary, is_active, sort_order )
+    `
+    )
+    .eq("is_active", true)
+    .order("featured", { ascending: false })
+    .order("featured_order", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error || !data) return [];
+
+  // group theo category
+  const byCat = new Map<string, UICategoryBlock>();
+
+  for (const row of data) {
+    const catRaw = (row as any).category;
+    const cat = Array.isArray(catRaw) ? catRaw[0] : catRaw;
+
+if (!cat?.id || !cat?.name || !cat?.slug) continue;
+
+    if (!cat) continue;
+
+    // chọn ảnh: ưu tiên primary + active, fallback ảnh active sort_order thấp, fallback products.image_url, fallback placeholder
+    const imgs = (row.images ?? []) as Array<{
+      public_url: string;
+      is_primary: boolean;
+      is_active: boolean;
+      sort_order: number;
+    }>;
+
+    const primary =
+      imgs.find((x) => x.is_active && x.is_primary) ??
+      imgs
+        .filter((x) => x.is_active)
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))[0];
+
+    const img =
+      primary?.public_url ||
+      (row.image_url as string | null) ||
+      "/images/products/placeholder.png";
+
+    // badge: tự suy ra (vì DB bạn chưa có cột badge)
+    const isNew =
+      row.created_at &&
+      Date.now() - new Date(row.created_at as string).getTime() < 14 * 24 * 60 * 60 * 1000;
+
+    const badgeText = typeof row.badge === "string" ? row.badge.trim() : "";
+
+    const badge = row.in_stock === false ? "Hết hàng" 
+                  : badgeText ? badgeText
+                  : isNew? "Mới"
+                  : null;
+    const meta = formatPackaging({
+      packaging_override: row.packaging_override,
+      package_type: row.package_type,
+      pack_qty: row.pack_qty,
+      unit: row.unit,
+      volume_ml: row.volume_ml,
+      packaging: row.packaging,
+    });
+
+    const product: UIProduct = {
+      badge,
+      name: row.name as string,
+      code: (row.code as string | null) || (row.slug as string) || "",
+      desc: (row.description as string | null) || "",
+      meta,
+      img,
+      in_stock: row.in_stock,
+      slug: row.slug,
+    };
+
+    if (!byCat.has(cat.id)) {
+      byCat.set(cat.id, {
+        title: cat.name,
+        href: `/san-pham?cat=${cat.slug}`,
+        products: [],
+      });
+    }
+
+    byCat.get(cat.id)!.products.push(product);
+  }
+
+  // Mỗi danh mục lấy 3 sản phẩm để giống UI home
+  const blocks = Array.from(byCat.values()).map((b) => ({
+    ...b,
+    products: b.products.slice(0, 3),
+  }));
+
+  // Home thường chỉ show 2-3 danh mục
+  return blocks.slice(0, 3);
+}
+
+export default async function HomePage() {
+ const categoryBlocks = await getHomeCategoryBlocks();
   return (
     <>
+    <HomeRealtimeRefresh />
     {/* Header */}
     {/* <SiteHeader phone={phone} zaloLink={zaloLink} /> */}
     <main className="min-h-screen bg-white">
@@ -35,60 +163,13 @@ export default function HomePage() {
             </Link>
           </div>
          {/* Divider */}
-  <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-[#0b2bbf]/25 to-transparent" />
+        <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-[#0b2bbf]/25 to-transparent" />
 
           {/* Danh mục */}
          <div className="mt-10 space-y-12">
-            <CategoryBlock
-              title="Nước ngọt"
-              href="/san-pham?cat=nuoc-ngot"
-              products={[
-                {
-                  badge: "Bán chạy",
-                  name: "Coca-Cola lon",
-                  code: "S001",
-                  desc:
-                    "Hương vị quen thuộc, giao nhanh. Phù hợp mua theo thùng cho gia đình/quán.",
-                  meta: "330ml, Thùng 24 lon",
-                  img: "/images/products/biasaigon.jpg",
-                },
-            
-              ]}
-            />
-
-            <CategoryBlock
-              title="Nước suối"
-              href="/san-pham?cat=nuoc-suoi"
-              products={[
-                {
-                  badge: "Tinh khiết",
-                  name: "Aquafina",
-                  code: "S001",
-                  desc:
-                    "Nước tinh khiết, tiện mang đi. Phù hợp cho văn phòng và sự kiện.",
-                  meta: "500ml, Thùng 24 chai",
-                  img: "/images/products/coca-cola.png",
-                },
-                {
-                  badge: "Phổ biến",
-                  name: "Lavie",
-                  code: "S001",
-                  desc:
-                    "Nước khoáng thiên nhiên. Thích hợp dùng hằng ngày, giao nhanh.",
-                  meta: "500ml, Thùng 24 chai",
-                  img: "/images/products/biasaigon.jpg",
-                },
-                {
-                  badge: "Tiện lợi",
-                  name: "Nước suối 1.5L",
-                  code: "S001",
-                  desc:
-                    "Dung tích lớn cho gia đình/quán. Giá tốt khi lấy theo thùng.",
-                  meta: "1.5L, Thùng 12 chai",
-                 img: "/images/products/coca-cola.png",
-                },
-              ]}
-            />
+            {categoryBlocks.map((cat) => (
+              <CategoryBlock key={cat.href} title={cat.title} href={cat.href} products={cat.products} />
+            ))}
 
           </div>
         </div>
@@ -110,12 +191,14 @@ function CategoryBlock({
   title: string;
   href: string;
   products: Array<{
-    badge: string;
+    badge: string | null;
     name: string;
     code: string; // thêm mã
     desc: string;
     meta: string;
     img: string;
+    in_stock: boolean;
+    slug: string;
   }>;
 }) {
   return (
@@ -132,7 +215,7 @@ function CategoryBlock({
 
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {products.map((p) => (
-          <ProductCard key={p.name} p={p} />
+          <ProductCard key={p.code} p={p} />
         ))}
       </div>
     </div>
@@ -143,46 +226,79 @@ function ProductCard({
   p,
 }: {
   p: {
-    badge: string;
+    badge: string | null;
     name: string;
-    code: string; // thêm mã
+    code: string;
+    slug: string;
     desc: string;
     meta: string;
     img: string;
+    in_stock?: boolean; // thêm field này nếu bạn truyền
   };
 }) {
+  const out = p.badge === "Hết hàng" || p.in_stock === false; // an toàn 2 kiểu
   return (
-    <div className="group relative h-full w-full border-b border-[#0b2bbf]/15 py-6 transition-all duration-300
-                hover:-translate-y-1 hover:shadow-2xl">
-      <div className="bg-[#fbf7ea] flex h-full flex-col rounded-2xl ring-1 ring-transparent
-                group-hover:ring-[#0b2bbf]/20 transition overflow-hidden">
+    <div
+      className={[
+        "group relative h-full w-full border-b border-[#0b2bbf]/15 py-6 transition-all duration-300",
+        out ? "opacity-95" : "hover:-translate-y-1 hover:shadow-2xl",
+      ].join(" ")}
+    >
+      <div
+        className={[
+          "bg-[#fbf7ea] flex h-full flex-col rounded-2xl ring-1 ring-transparent transition overflow-hidden",
+          out ? "ring-[#0b2bbf]/10" : "group-hover:ring-[#0b2bbf]/20",
+        ].join(" ")}
+      >
         {/* Badge */}
-        <div className="w-full px-4">
-          <div className="relative h-6">
-            <div className="absolute left-0 top-0 z-[1] flex flex-col gap-1">
-              <span className="w-fit rounded-md bg-white px-2 py-1 text-[11px] font-bold text-[#0b2bbf] ring-1 ring-[#0b2bbf]/15">
-                {p.badge}
-              </span>
+        {p.badge && (
+          <div className="w-full px-4 pt-4">
+            <div className="relative h-6">
+              <div className="absolute left-0 top-0 z-[1] flex flex-col gap-1">
+                <span
+                  className={[
+                    "w-fit rounded-md px-2 py-1 text-[11px] font-bold ring-1",
+                    out
+                      ? "bg-red-600 text-white ring-red-600/30"
+                      : "bg-white text-[#0b2bbf] ring-[#0b2bbf]/15",
+                  ].join(" ")}
+                >
+                  {p.badge}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Ảnh: aspect ratio giống Vinamilk */}
-        <Link href="/san-pham" className="block text-[#0b2bbf]">
+        {/* Ảnh */}
+        <Link href={`/san-pham/${p.slug}`} className="block text-[#0b2bbf]">
           <div className="relative overflow-hidden pt-[90%]">
             <Image
               src={p.img}
               alt={p.name}
               fill
               sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
-              className="h-full w-full object-contain transition-transform duration-200 group-hover:scale-[1.08]"
+              className={[
+                "h-full w-full object-contain transition-transform duration-200",
+                out
+                  ? "grayscale opacity-60"
+                  : "group-hover:scale-[1.08]",
+              ].join(" ")}
             />
+
+            {/* Overlay “Hết hàng” nhẹ trên ảnh */}
+            {out && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="rounded-full bg-black/55 text-white text-xs font-bold px-3 py-1">
+                  Tạm hết hàng
+                </span>
+              </div>
+            )}
           </div>
         </Link>
 
         {/* Nội dung */}
         <div className="flex grow flex-col px-4">
-
           <div className="mt-4 flex items-start justify-between gap-3">
             <h3 className="text-base md:text-lg font-extrabold tracking-tight text-[#0b2bbf]">
               {p.name}
@@ -190,8 +306,15 @@ function ProductCard({
 
             <button
               type="button"
-              className="p-2 rounded-full hover:bg-[#0b2bbf]/10 text-[#0b2bbf]"
-              aria-label="Mở tuỳ chọn"
+              disabled={out}
+              className={[
+                "p-2 rounded-full text-[#0b2bbf] transition",
+                out
+                  ? "opacity-40 cursor-not-allowed"
+                  : "hover:bg-[#0b2bbf]/10",
+              ].join(" ")}
+              aria-label={out ? "Hết hàng" : "Thêm vào giỏ"}
+              title={out ? "Hết hàng" : "Thêm vào giỏ"}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path
@@ -236,5 +359,5 @@ function ProductCard({
       </div>
     </div>
   );
-
 }
+

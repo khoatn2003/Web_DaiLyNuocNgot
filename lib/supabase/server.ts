@@ -12,11 +12,17 @@ export async function createSupabaseServer() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
+          setAll(cookiesToSet) {
+          // Server Component không được set cookie -> phải try/catch
+          try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            // ignore: chỉ được set cookie trong Server Action / Route Handler
+            
+          }
+         },
       },
     }
   );

@@ -74,20 +74,6 @@ export default function ContactPage() {
             </p>
 
             <div className="mt-4 flex flex-wrap gap-3">
-              <a
-                href={`tel:${SITE.phone}`}
-                className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#0213b0] hover:opacity-90"
-              >
-                Gọi ngay
-              </a>
-              <a
-                href={zaloLink}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-xl border border-white/40 px-5 py-3 text-sm font-semibold hover:bg-white/10"
-              >
-                Chat Zalo
-              </a>
               <Link
                 href="/san-pham"
                 className="rounded-xl border border-white/40 px-5 py-3 text-sm font-semibold hover:bg-white/10"

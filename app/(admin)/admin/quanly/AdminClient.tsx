@@ -830,7 +830,7 @@ function ProductModal({
 
               {!initial?.id ? (
                 <div className="mt-3 text-sm text-zinc-400">
-                  Lưu sản phẩm trước, rồi mới upload ảnh (cần product_id).
+                  Lưu sản phẩm trước, rồi mới upload ảnh (vì cần có mã sản phẩm trước).
                 </div>
               ) : (
                 <div className="mt-3">

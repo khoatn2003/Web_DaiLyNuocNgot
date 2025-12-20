@@ -74,20 +74,6 @@ export default function AboutPage() {
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <a
-                  href={`tel:${SITE.phone}`}
-                  className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#0213b0] hover:opacity-90"
-                >
-                  Gọi đặt hàng
-                </a>
-                <a
-                  href={zaloLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-xl border border-white/40 px-5 py-3 text-sm font-semibold hover:bg-white/10"
-                >
-                  Chat Zalo
-                </a>
                 <Link
                   href="/san-pham"
                   className="rounded-xl border border-white/40 px-5 py-3 text-sm font-semibold hover:bg-white/10"
@@ -187,7 +173,7 @@ export default function AboutPage() {
       <section className="mx-auto max-w-6xl px-4 pb-12">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold">Vì sao chọn chúng tôi?</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">Vì sao chọn chúng tôi?</h2>
             <p className="mt-2 text-gray-600 max-w-2xl">
               Tối ưu cho khách mua nhanh: xem mẫu, hỏi giá, chốt đơn, giao hàng.
             </p>
