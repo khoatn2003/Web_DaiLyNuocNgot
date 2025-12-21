@@ -51,6 +51,9 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: SITE.name,
   description: "Website giới thiệu sản phẩm – liên hệ qua điện thoại hoặc Zalo.",
+   icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",}
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

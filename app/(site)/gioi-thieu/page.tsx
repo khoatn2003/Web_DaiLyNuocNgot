@@ -20,19 +20,23 @@ function Card({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border bg-white p-5 shadow-sm ">
       <div className="flex items-start gap-3">
         <div className="mt-0.5 rounded-xl bg-[#0213b0]/10 p-2 text-[#0213b0]">
           {icon}
         </div>
+
         <div>
-          <div className="font-semibold text-base">{title}</div>
-          <div className="mt-1 text-sm text-gray-600 leading-relaxed">{desc}</div>
+          <div className="font-semibold text-base text-slate-900">{title}</div>
+          <div className="mt-1 text-sm text-slate-600 leading-relaxed">
+            {desc}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
@@ -49,7 +53,7 @@ export default function AboutPage() {
   const zaloLink = `https://zalo.me/${SITE.zalo}`;
 
   return (
-    <main className="bg-white">
+    <main className="bg-[#fbf7ea] border-y border-[#0b2bbf]/30">
       {/* Hero */}
       <section className="bg-[#0213b0] text-white">
         <div className="mx-auto max-w-6xl px-4 py-10 md:py-14">
@@ -69,7 +73,7 @@ export default function AboutPage() {
               </h1>
 
               <p className="mt-3 text-white/85 leading-relaxed max-w-xl">
-                Chuyên cung cấp nước ngọt, nước suối, nước tăng lực <b>sỉ & lẻ</b>.
+                Chuyên cung cấp nước ngọt, nước khoáng, nước tăng lực, sinh tố lúa mạch,... <b>sỉ & lẻ</b>.
                 Ưu tiên giao nhanh – giá rõ ràng – hàng chuẩn nguồn.
               </p>
 
@@ -183,7 +187,7 @@ export default function AboutPage() {
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           <Card
             title="Đa dạng sản phẩm"
-            desc="Nước ngọt, nước suối, tăng lực… cập nhật theo nhu cầu thị trường."
+            desc="Nước ngọt, sinh tố lúa mạch, tăng lực… cập nhật theo nhu cầu thị trường."
             icon={
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M7 7h10v14H7V7Z" stroke="currentColor" strokeWidth="2" />
@@ -237,32 +241,36 @@ export default function AboutPage() {
       </section>
 
       {/* Process */}
-      <section className="bg-gray-50 border-y">
+      <section className="bg-[#fbf7ea] border-y border-[#0b2bbf]/30">
         <div className="mx-auto max-w-6xl px-4 py-12">
-          <h2 className="text-2xl md:text-3xl font-bold">Quy trình đặt hàng</h2>
-          <p className="mt-2 text-gray-600 max-w-2xl">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+            Quy trình đặt hàng
+          </h2>
+          <p className="mt-2 max-w-2xl text-slate-600">
             Đơn giản, nhanh, đúng thứ bạn cần.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border bg-white p-5">
+            <div className="rounded-2xl border bg-white p-5 ">
               <div className="text-xs font-semibold text-[#0213b0]">BƯỚC 1</div>
-              <div className="mt-2 font-semibold">Chọn sản phẩm</div>
-              <div className="mt-1 text-sm text-gray-600">
+              <div className="mt-2 font-semibold text-slate-900">Chọn sản phẩm</div>
+              <div className="mt-1 text-sm text-slate-600">
                 Vào trang sản phẩm và chọn loại bạn cần.
               </div>
             </div>
+
             <div className="rounded-2xl border bg-white p-5">
               <div className="text-xs font-semibold text-[#0213b0]">BƯỚC 2</div>
-              <div className="mt-2 font-semibold">Gửi thông tin</div>
-              <div className="mt-1 text-sm text-gray-600">
+              <div className="mt-2 font-semibold text-slate-900">Gửi thông tin</div>
+              <div className="mt-1 text-sm text-slate-600">
                 Nhắn Zalo hoặc gọi: loại, số lượng, địa chỉ nhận.
               </div>
             </div>
+
             <div className="rounded-2xl border bg-white p-5">
               <div className="text-xs font-semibold text-[#0213b0]">BƯỚC 3</div>
-              <div className="mt-2 font-semibold">Giao hàng</div>
-              <div className="mt-1 text-sm text-gray-600">
+              <div className="mt-2 font-semibold text-slate-900">Giao hàng</div>
+              <div className="mt-1 text-sm text-slate-600">
                 Xác nhận đơn → giao đúng hẹn theo tuyến.
               </div>
             </div>

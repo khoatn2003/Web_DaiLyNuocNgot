@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { formatPackaging } from "@/lib/admin-utils";
 import HomeRealtimeRefresh from "@/components/home/HomeRealtimeRefresh";
+import CartNotReadyButton from "@/components/CartNotReadyButton";
 export const revalidate = 60;
 type UIProduct = {
   badge: string | null;
@@ -48,10 +49,8 @@ async function getHomeCategoryBlocks(): Promise<UICategoryBlock[]> {
     .limit(200);
 
   if (error || !data) return [];
-
   // group theo category
   const byCat = new Map<string, UICategoryBlock>();
-
   for (const row of data) {
     const catRaw = (row as any).category;
     const cat = Array.isArray(catRaw) ? catRaw[0] : catRaw;
@@ -163,10 +162,10 @@ export default async function HomePage() {
             </Link>
           </div>
          {/* Divider */}
-        <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-[#0b2bbf]/25 to-transparent" />
+          <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-[#0b2bbf]/25 to-transparent" />
 
           {/* Danh mục */}
-         <div className="mt-10 space-y-12">
+          <div className="mt-10 space-y-12">
             {categoryBlocks.map((cat) => (
               <CategoryBlock key={cat.href} title={cat.title} href={cat.href} products={cat.products} />
             ))}
@@ -236,7 +235,7 @@ function ProductCard({
     in_stock?: boolean; // thêm field này nếu bạn truyền
   };
 }) {
-  const out = p.badge === "Hết hàng" || p.in_stock === false; // an toàn 2 kiểu
+  const out = p.badge === "Hết hàng" || p.in_stock === false; // an toàn 2 kiểu   
   return (
     <div
       className={[
@@ -304,7 +303,7 @@ function ProductCard({
               {p.name}
             </h3>
 
-            <button
+            {/* <button
               type="button"
               disabled={out}
               className={[
@@ -330,7 +329,9 @@ function ProductCard({
                   strokeLinecap="round"
                 />
               </svg>
-            </button>
+            </button> */}
+            <CartNotReadyButton disabled={out} productName={p.name} />
+
           </div>
 
           <p className="my-2 text-sm text-[#0b2bbf]/75 line-clamp-2 leading-relaxed">
@@ -358,6 +359,7 @@ function ProductCard({
         </div>
       </div>
     </div>
+    
   );
 }
 
