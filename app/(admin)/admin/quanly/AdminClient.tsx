@@ -37,6 +37,12 @@ export default function AdminClient({ email }: { email: string }) {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
+  //Lọc + Pagination
+  const [filterCat, setFilterCat] = useState<string>("");   // category_id
+  const [filterBrand, setFilterBrand] = useState<string>(""); // brand_id
+  const [pageSize, setPageSize] = useState<number | "all">(10);
+  const [page, setPage] = useState(1);
+
   // Modal
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ProductRow | null>(null);
@@ -62,6 +68,10 @@ useEffect(() => {
   localStorage.setItem("admin_theme", theme);
 }, [theme]);
 
+useEffect(() => {
+  setPage(1);
+}, [q, filterCat, filterBrand, pageSize]);
+
   async function loadProducts() {
     setBusy(true);
     const { data, error } = await supabase
@@ -83,18 +93,50 @@ useEffect(() => {
   }
 
   const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return items;
-    return items.filter((p) => {
-      const brandName = p.brands?.name ?? p.brand ?? "";
-      return (
-        p.name.toLowerCase().includes(s) ||
-        (p.code ?? "").toLowerCase().includes(s) ||
-        (p.slug ?? "").toLowerCase().includes(s) ||
-        brandName.toLowerCase().includes(s)
-      );
-    });
-  }, [items, q]);
+  const s = q.trim().toLowerCase();
+  return items.filter((p) => {
+    // Lọc theo danh mục/hãng (theo id)
+    if (filterCat && (p.category_id ?? "") !== filterCat) return false;
+    if (filterBrand && (p.brand_id ?? "") !== filterBrand) return false;
+
+    // Lọc theo từ khóa
+    if (!s) return true;
+
+    const brandName = p.brands?.name ?? p.brand ?? "";
+    return (
+      p.name.toLowerCase().includes(s) ||
+      (p.code ?? "").toLowerCase().includes(s) ||
+      (p.slug ?? "").toLowerCase().includes(s) ||
+      brandName.toLowerCase().includes(s)
+    );
+  });
+}, [items, q, filterCat, filterBrand]);
+
+const total = filtered.length;
+
+const totalPages = useMemo(() => {
+  if (pageSize === "all") return 1;
+  return Math.max(1, Math.ceil(total / pageSize));
+}, [total, pageSize]);
+
+useEffect(() => {
+  // Nếu đang ở trang > totalPages thì kéo về trang cuối
+  if (pageSize === "all") {
+    if (page !== 1) setPage(1);
+  } else {
+    if (page > totalPages) setPage(totalPages);
+  }
+}, [page, pageSize, totalPages]);
+
+const paged = useMemo(() => {
+  if (pageSize === "all") return filtered;
+  const start = (page - 1) * pageSize;
+  return filtered.slice(start, start + pageSize);
+}, [filtered, page, pageSize]);
+
+const showingFrom = total === 0 ? 0 : pageSize === "all" ? 1 : (page - 1) * pageSize + 1;
+const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total, page * pageSize);
+
 
   async function logout() {
     await supabase.auth.signOut();
@@ -324,7 +366,7 @@ useEffect(() => {
         success: "text-emerald-700",
         preview: "text-gray-700",
       };
-return (
+return ( 
   <div className={cls.page}>
     {/* Top bar */}
     <div className={`sticky top-0 z-20 ${cls.topbar} backdrop-blur`}>
@@ -403,6 +445,51 @@ return (
                 </button>
               </div>
             </div>
+            <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:items-center">
+              <select
+                className={`w-full sm:w-56 rounded-xl border p-2.5 outline-none ${cls.input}`}
+                value={filterCat}
+                onChange={(e) => setFilterCat(e.target.value)}
+              >
+                <option value="">Tất cả danh mục</option>
+                {cats.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {(c.abbr ?? "--") + " • " + c.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className={`w-full sm:w-56 rounded-xl border p-2.5 outline-none ${cls.input}`}
+                value={filterBrand}
+                onChange={(e) => setFilterBrand(e.target.value)}
+              >
+                <option value="">Tất cả hãng</option>
+                {brs.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {(b.abbr ?? "--") + " • " + b.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className={`w-full sm:w-44 rounded-xl border p-2.5 outline-none ${cls.input}`}
+                value={pageSize}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setPageSize(v === "all" ? "all" : Number(v));
+                }}
+              >
+                <option value={5}>Hiển thị 5</option>
+                <option value={10}>Hiển thị 10</option>
+                <option value={20}>Hiển thị 20</option>
+                <option value="all">Tất cả</option>
+              </select>
+
+              <div className={`sm:ml-auto text-sm ${cls.muted}`}>
+                Đang xem: <b>{showingFrom}</b>–<b>{showingTo}</b> / <b>{total}</b>
+              </div>
+            </div>
 
             <div className={`mt-4 overflow-auto rounded-xl border ${cls.tableWrap}`}>
               <table className="min-w-full text-sm">
@@ -429,7 +516,7 @@ return (
                       </td>
                     </tr>
                   ) : (
-                    filtered.map((p) => {
+                    paged.map((p) => {
                       const brandName = p.brands?.name ?? null;
                       const brand = formatBrand({ brand_name: brandName, brand: p.brand });
                       const packaging = formatPackaging(p);
@@ -475,6 +562,30 @@ return (
                 </tbody>
               </table>
             </div>
+            {pageSize !== "all" && total > 0 && (
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <button
+                  className={`rounded-lg border px-3 py-1.5 ${cls.btnOutline} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  ← Trước
+                </button>
+
+                <div className={`text-sm ${cls.muted}`}>
+                  Trang <b>{page}</b> / <b>{totalPages}</b>
+                </div>
+
+                <button
+                  className={`rounded-lg border px-3 py-1.5 ${cls.btnOutline} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  Sau →
+                </button>
+              </div>
+            )}
+            
           </div>
         )}
 
@@ -502,6 +613,7 @@ return (
     {/* Modal create/edit */}
     {open && (
       <ProductModal
+        theme={theme}
         cls={cls}
         cats={cats}
         brs={brs}
@@ -598,6 +710,7 @@ function Chip({
 
 
 function ProductModal({
+  theme,
   cls,
   cats,
   brs,
@@ -610,6 +723,7 @@ function ProductModal({
   onPrimary,
   onDeleteImage,
 }: {
+  theme: "dark" | "light";
   cls: any;
   cats: Category[];
   brs: Brand[];
@@ -639,251 +753,342 @@ function ProductModal({
       pack_qty: null,
       unit: "",
       volume_ml: null,
-      badge: "", 
+      badge: "",
     }
   );
 
-  const canPublish = Boolean(form.code) || Boolean(initial?.code); // code sinh tự động khi đủ danh mục+hãng
-  const previewBrand = (initial?.brands?.name ?? null) || "";
+  // ✅ Tabs mobile
+  const [mobileTab, setMobileTab] = useState<"info" | "images">("info");
+  useEffect(() => {
+    // mở modal / đổi item -> quay về tab thông tin cho dễ nhập
+    setMobileTab("info");
+  }, [initial?.id]);
+
+  const canPublish = Boolean(form.code) || Boolean(initial?.code);
   const previewPack = formatPackaging(form as any);
 
+  function TabBtn({ id, label }: { id: "info" | "images"; label: string }) {
+    const active = mobileTab === id;
+    return (
+      <button
+        type="button"
+        onClick={() => setMobileTab(id)}
+        className={[
+          "rounded-xl border px-3 py-2 text-sm font-semibold transition",
+          active ? cls.primaryBtn : cls.btnOutline,
+        ].join(" ")}
+      >
+        {label}
+      </button>
+    );
+  }
+
+  // ✅ Left block: Thông tin
+  const Left = (
+    <div className="space-y-3">
+      <input
+        className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+        placeholder="Tên sản phẩm"
+        value={form.name ?? ""}
+        onChange={(e) =>
+          setForm({ ...form, name: e.target.value, slug: slugify(e.target.value) })
+        }
+      />
+
+      <input
+        className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+        placeholder="Slug (auto theo tên, có thể sửa)"
+        value={form.slug ?? ""}
+        onChange={(e) => setForm({ ...form, slug: e.target.value })}
+      />
+
+      <input
+        className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+        placeholder="Badge (vd: Bán chạy / Phổ biến / Mới về)"
+        value={(form.badge ?? "") as any}
+        onChange={(e) => setForm({ ...form, badge: e.target.value })}
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <select
+          className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
+          value={form.category_id ?? ""}
+          onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}
+        >
+          <option value="">— Danh mục —</option>
+          {cats.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.abbr ?? "--"} • {c.name}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
+          value={form.brand_id ?? ""}
+          onChange={(e) => setForm({ ...form, brand_id: e.target.value || null })}
+        >
+          <option value="">— Hãng —</option>
+          {brs.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.abbr ?? "--"} • {b.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <input
+          className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+          placeholder="Giá (VND) - để trống nếu Liên hệ"
+          value={form.price ?? ""}
+          onChange={(e) =>
+            setForm({ ...form, price: e.target.value ? Number(e.target.value) : null })
+          }
+        />
+        <input
+          className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+          placeholder="Thứ tự nổi bật (0..)"
+          value={form.featured_order ?? 0}
+          onChange={(e) =>
+            setForm({ ...form, featured_order: Number(e.target.value) || 0 })
+          }
+        />
+      </div>
+
+      <textarea
+        className={`w-full min-h-[100px] rounded-xl border p-2.5 outline-none ${cls.field}`}
+        placeholder="Mô tả"
+        value={form.description ?? ""}
+        onChange={(e) => setForm({ ...form, description: e.target.value })}
+      />
+
+      <div className="flex flex-wrap gap-4 text-sm">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={form.in_stock ?? true}
+            onChange={(e) => setForm({ ...form, in_stock: e.target.checked })}
+          />
+          Còn hàng
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={form.featured ?? false}
+            onChange={(e) => setForm({ ...form, featured: e.target.checked })}
+          />
+          Nổi bật
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={form.is_active ?? false}
+            onChange={(e) => {
+              if (e.target.checked && !canPublish) return;
+              setForm({ ...form, is_active: e.target.checked });
+            }}
+          />
+          Hiển thị
+        </label>
+
+        {!canPublish && (
+          <span className={`text-xs ${cls.muted}`}>
+            (Chưa có code → chọn Danh mục + Hãng rồi lưu để sinh mã)
+          </span>
+        )}
+      </div>
+
+      <div className={`rounded-xl border p-3 ${cls.card2}`}>
+        <div className="text-sm font-medium">Quy cách</div>
+        <div className={`text-xs mt-1 ${cls.muted}`}>Ưu tiên: override → pack chuẩn.</div>
+
+        <input
+          className={`mt-3 w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+          placeholder="Override (vd: Két 20 chai thủy tinh 450ml) — để trống nếu dùng pack chuẩn"
+          value={form.packaging_override ?? ""}
+          onChange={(e) => setForm({ ...form, packaging_override: e.target.value })}
+        />
+
+        <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <select
+            className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
+            value={form.package_type ?? ""}
+            onChange={(e) => setForm({ ...form, package_type: e.target.value || null })}
+          >
+            {PK_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+
+          <input
+            className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+            placeholder="Số lượng"
+            value={form.pack_qty ?? ""}
+            onChange={(e) =>
+              setForm({ ...form, pack_qty: e.target.value ? Number(e.target.value) : null })
+            }
+          />
+
+          <select
+            className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
+            value={form.unit ?? ""}
+            onChange={(e) => setForm({ ...form, unit: e.target.value || null })}
+          >
+            {UNIT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+
+          <input
+            className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
+            placeholder="ml"
+            value={form.volume_ml ?? ""}
+            onChange={(e) =>
+              setForm({ ...form, volume_ml: e.target.value ? Number(e.target.value) : null })
+            }
+          />
+        </div>
+
+        <div className={`mt-2 text-xs ${cls.preview}`}>
+          Preview: <span className={`font-semibold ${cls.success}`}>{previewPack || "—"}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ✅ Right block: Ảnh + quy ước
+  const Right = (
+    <div className="space-y-3">
+      <div className={`rounded-xl border p-3 ${cls.card2}`}>
+        <div className="flex items-center">
+          <div className="text-sm font-medium">Ảnh sản phẩm</div>
+          <div className={`ml-auto text-xs ${cls.muted}`}>
+            {initial?.code ? `Mã: ${initial.code}` : "Chưa có mã"}
+          </div>
+        </div>
+
+        {!initial?.id ? (
+          <div className={`mt-3 text-sm ${cls.muted}`}>
+            Lưu sản phẩm trước, rồi mới upload ảnh (vì cần có mã sản phẩm trước).
+          </div>
+        ) : (
+          <div className="mt-3">
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={imgBusy}
+              onChange={(e) => onUpload(initial.id, e.target.files)}
+            />
+            {imgBusy && <div className={`text-xs mt-2 ${cls.muted}`}>Đang upload…</div>}
+          </div>
+        )}
+
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {imgs.map((im) => (
+            <div key={im.id} className={`rounded-xl border overflow-hidden ${cls.imgTile}`}>
+              <img src={im.public_url} alt="" className="aspect-square w-full object-cover" />
+              <div className="p-2 flex items-center gap-2">
+                {im.is_primary ? (
+                  <span className={`text-xs ${cls.success}`}>Đại diện</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onPrimary(im.product_id, im.id)}
+                    className={`text-xs rounded-lg border px-2 py-1 ${cls.imgBtn}`}
+                  >
+                    Đặt đại diện
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onDeleteImage(im)}
+                  className={`ml-auto text-xs rounded-lg border px-2 py-1 ${cls.imgBtn} ${cls.danger}`}
+                >
+                  Xoá
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {imgs.length === 0 && initial?.id && (
+          <div className={`mt-3 text-sm ${cls.muted}`}>Chưa có ảnh.</div>
+        )}
+      </div>
+
+      <div className={`rounded-xl border p-3 ${cls.card2}`}>
+        <div className="font-medium">Quy ước “không rối”</div>
+        <ul className={`mt-2 list-disc pl-5 space-y-1 text-sm ${cls.muted}`}>
+          <li>Admin chỉ chọn hãng từ dropdown (không nhập brand text).</li>
+          <li>Ảnh ưu tiên gallery (primary), fallback image_url (ẩn).</li>
+          <li>Quy cách ưu tiên override → pack chuẩn.</li>
+        </ul>
+      </div>
+    </div>
+  );
+
   return (
-    <div className={`fixed inset-0 z-50 ${cls.overlay} p-4 flex items-center justify-center`}>
-        <div className={`w-full max-w-3xl rounded-2xl border shadow-xl overflow-hidden ${cls.modal}`}>
-        <div className={`p-4 border-b flex items-center gap-2 ${cls.modalHeader}`}>
+    <div
+      className={`fixed inset-0 z-50 ${cls.overlay} p-2 sm:p-4 flex items-start sm:items-center justify-center overflow-y-auto`}
+      onClick={onClose}
+    >
+      <div
+        className={`w-full max-w-3xl rounded-2xl border shadow-xl overflow-hidden ${cls.modal}`}
+        style={{ maxHeight: "calc(100dvh - 16px)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header sticky */}
+        <div
+          className={`p-3 sm:p-4 border-b flex items-center gap-2 ${cls.modalHeader} sticky top-0 z-20 backdrop-blur`}
+        >
           <div className="font-semibold">{initial ? "Sửa sản phẩm" : "Thêm sản phẩm"}</div>
           <div className="ml-auto flex gap-2">
-            <button onClick={onClose} className={`rounded-xl border px-3 py-1.5 ${cls.btnOutline}`}>
+            <button
+              type="button"
+              onClick={onClose}
+              className={`rounded-xl border px-3 py-1.5 ${cls.btnOutline}`}
+            >
               Đóng
             </button>
-              <button onClick={() => onSave(form)} className={`rounded-xl px-4 py-1.5 font-medium ${cls.primaryBtn}`}>
+            <button
+              type="button"
+              onClick={() => onSave(form)}
+              className={`rounded-xl px-4 py-1.5 font-medium ${cls.primaryBtn}`}
+            >
               Lưu
             </button>
           </div>
         </div>
 
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Left: product fields */}
-          <div className="space-y-3">
-            <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
-              placeholder="Tên sản phẩm"
-              value={form.name ?? ""}
-              onChange={(e) => setForm({ ...form, name: e.target.value, slug: slugify(e.target.value) })}
-            />
-            <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
-              placeholder="Slug (auto theo tên, có thể sửa)"
-              value={form.slug ?? ""}
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
-            />
-            <input
-                className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
-                placeholder="Badge (vd: Bán chạy / Phổ biến / Mới về)"
-                value={(form.badge ?? "") as any}
-                onChange={(e) => setForm({ ...form, badge: e.target.value })}
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
-                value={form.category_id ?? ""}
-                onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}
-              >
-                <option value="">— Danh mục —</option>
-                {cats.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.abbr ?? "--"} • {c.name}
-                  </option>
-                ))}
-              </select>
+        {/* Tabs (mobile only) */}
+        <div className="px-3 sm:px-4 pt-3 lg:hidden">
+          <div className="grid grid-cols-2 gap-2">
+            <TabBtn id="info" label="Thông tin" />
+            <TabBtn id="images" label="Ảnh" />
+          </div>
+        </div>
 
-              <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
-                value={form.brand_id ?? ""}
-                onChange={(e) => setForm({ ...form, brand_id: e.target.value || null })}
-              >
-                <option value="">— Hãng —</option>
-                {brs.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.abbr ?? "--"} • {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
-                placeholder="Giá (VND) - để trống nếu Liên hệ"
-                value={form.price ?? ""}
-                onChange={(e) => setForm({ ...form, price: e.target.value ? Number(e.target.value) : null })}
-              />
-              <input
-                className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
-                placeholder="Thứ tự nổi bật (0..)"
-                value={form.featured_order ?? 0}
-                onChange={(e) => setForm({ ...form, featured_order: Number(e.target.value) || 0 })}
-              />
-            </div>
-
-            <textarea className={`w-full min-h-[90px] rounded-xl border p-2.5 outline-none ${cls.field}`}
-              placeholder="Mô tả"
-              value={form.description ?? ""}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-
-            <div className="flex flex-wrap gap-4 text-sm">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={form.in_stock ?? true}
-                  onChange={(e) => setForm({ ...form, in_stock: e.target.checked })}
-                />
-                Còn hàng
-              </label>
-
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={form.featured ?? false}
-                  onChange={(e) => setForm({ ...form, featured: e.target.checked })}
-                />
-                Nổi bật
-              </label>
-
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={form.is_active ?? false}
-                  onChange={(e) => {
-                    if (e.target.checked && !canPublish) return;
-                    setForm({ ...form, is_active: e.target.checked });
-                  }}
-                />
-                Hiển thị
-              </label>
-
-              {!canPublish && (
-                <span className="text-xs text-zinc-400">
-                  (Chưa có code → chọn Danh mục + Hãng rồi lưu để sinh mã)
-                </span>
-              )}
-            </div>
-
-            <div className={`rounded-xl border p-3 ${cls.card2}`}>
-              <div className="text-sm font-medium">Quy cách</div>
-              <div className={`text-xs mt-1 ${cls.muted}`}>Ưu tiên: override → pack chuẩn.</div>
-
-              <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
-                placeholder="Override (vd: Két 20 chai thủy tinh 450ml) — để trống nếu dùng pack chuẩn"
-                value={form.packaging_override ?? ""}
-                onChange={(e) => setForm({ ...form, packaging_override: e.target.value })}
-              />
-
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
-                  value={form.package_type ?? ""}
-                  onChange={(e) => setForm({ ...form, package_type: e.target.value || null })}
-                >
-                  {PK_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-
-               <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
-                  placeholder="Số lượng"
-                  value={form.pack_qty ?? ""}
-                  onChange={(e) => setForm({ ...form, pack_qty: e.target.value ? Number(e.target.value) : null })}
-                />
-
-                <select className={`rounded-xl border p-2.5 outline-none ${cls.field}`}
-                  value={form.unit ?? ""}
-                  onChange={(e) => setForm({ ...form, unit: e.target.value || null })}
-                >
-                  {UNIT_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-
-                <input className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
-                  placeholder="ml"
-                  value={form.volume_ml ?? ""}
-                  onChange={(e) => setForm({ ...form, volume_ml: e.target.value ? Number(e.target.value) : null })}
-                />
-              </div>
-
-              <div className={`mt-2 text-xs ${cls.preview}`}>
-                Preview: <span className={`text-xs ${cls.success}`}>{previewPack || "—"}</span>
-              </div>
-            </div>
+        {/* Scrollable content */}
+        <div
+          className="p-3 sm:p-4 overflow-y-auto"
+          style={{ maxHeight: "calc(100dvh - 160px)" }}
+        >
+          {/* Desktop: 2 cột */}
+          <div className="hidden lg:grid lg:grid-cols-2 gap-4">
+            {Left}
+            {Right}
           </div>
 
-          {/* Right: images */}
-          <div className="space-y-3">
-            <div className={`rounded-xl border p-3 ${cls.card2}`}>
-              <div className="flex items-center">
-                <div className="text-sm font-medium">Ảnh sản phẩm</div>
-                <div className="ml-auto text-xs text-zinc-400">
-                  {initial?.code ? `Mã: ${initial.code}` : "Chưa có mã"}
-                </div>
-              </div>
-
-              {!initial?.id ? (
-                <div className="mt-3 text-sm text-zinc-400">
-                  Lưu sản phẩm trước, rồi mới upload ảnh (vì cần có mã sản phẩm trước).
-                </div>
-              ) : (
-                <div className="mt-3">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    disabled={imgBusy}
-                    onChange={(e) => onUpload(initial.id, e.target.files)}
-                  />
-                  {imgBusy && <div className="text-xs text-zinc-400 mt-2">Đang upload…</div>}
-                </div>
-              )}
-
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                {imgs.map((im) => (
-                  <div key={im.id} className={`rounded-xl border overflow-hidden ${cls.imgTile}`}>
-                    <img src={im.public_url} alt="" className="aspect-square w-full object-cover" />
-                    <div className="p-2 flex items-center gap-2">
-                      {im.is_primary ? (
-                        <span className={`text-xs ${cls.success}`}>Đại diện</span>
-                      ) : (
-                        <button
-                          onClick={() => onPrimary(im.product_id, im.id)}
-                          className={`text-xs rounded-lg border px-2 py-1 ${cls.imgBtn}`}>
-                          Đặt đại diện
-                        </button>
-                      )}
-                      <button
-                        onClick={() => onDeleteImage(im)}
-                        className={`ml-auto text-xs rounded-lg border px-2 py-1 ${cls.imgBtn} ${cls.danger}`}
-                      >
-                        Xoá
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {imgs.length === 0 && initial?.id && (
-                <div className="mt-3 text-sm text-zinc-400">Chưa có ảnh.</div>
-              )}
-            </div>
-
-            <div className={`rounded-xl border p-3 ${cls.card2}`}>
-              <div className="font-medium">Quy ước “không rối”</div>
-              <ul className="mt-2 text-zinc-400 list-disc pl-5 space-y-1">
-                <li>Admin chỉ chọn hãng từ dropdown (không nhập brand text).</li>
-                <li>Ảnh ưu tiên gallery (primary), fallback image_url (ẩn).</li>
-                <li>Quy cách ưu tiên override → pack chuẩn.</li>
-              </ul>
-            </div>
-          </div>
+          {/* Mobile: theo tab */}
+          <div className="lg:hidden">{mobileTab === "info" ? Left : Right}</div>
         </div>
       </div>
     </div>
