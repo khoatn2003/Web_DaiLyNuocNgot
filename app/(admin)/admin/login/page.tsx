@@ -8,10 +8,11 @@ import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
 
 export default function AdminLogin() {
   const router = useRouter();
-  const supabase = createSupabaseBrowser();
+   // tạo client 1 lần (tránh tạo lại mỗi render)
+  const supabase = useMemo(() => createSupabaseBrowser(), []);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
@@ -19,6 +20,7 @@ export default function AdminLogin() {
   const canSubmit = useMemo(() => {
     return email.trim().length > 0 && password.length >= 6 && !loading;
   }, [email, password, loading]);
+
 
   async function onLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -36,8 +38,15 @@ export default function AdminLogin() {
         return;
       }
 
-      router.push("/admin");
-      router.refresh();
+      // ✅ chốt lại user/session trước khi điều hướng
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMsg("Đăng nhập chưa ổn định, vui lòng thử lại.");
+        return;
+      }
+
+      router.replace("/admin"); // replace để không back về login
+      // KHÔNG cần router.refresh ở đây
     } catch {
       setMsg("Có lỗi xảy ra. Vui lòng thử lại.");
     } finally {

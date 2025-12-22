@@ -40,7 +40,7 @@ export default function AdminClient({ email }: { email: string }) {
   //Lọc + Pagination
   const [filterCat, setFilterCat] = useState<string>("");   // category_id
   const [filterBrand, setFilterBrand] = useState<string>(""); // brand_id
-  const [pageSize, setPageSize] = useState<number | "all">(10);
+  const [pageSize, setPageSize] = useState<number | "all">(5);
   const [page, setPage] = useState(1);
 
   // Modal
@@ -1094,3 +1094,4 @@ function ProductModal({
     </div>
   );
 }
+

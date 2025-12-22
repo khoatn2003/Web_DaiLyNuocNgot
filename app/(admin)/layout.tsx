@@ -4,6 +4,8 @@ import SiteFooter from "@/components/SiteFooter";
 
 const phone = "0392048571";
 const zaloLink = `https://zalo.me/${phone}`;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
