@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
-import type { Category, Brand } from "../type";
+import type { Category, Brand, Notify } from "../type";
+import { toUserMessage } from "../lib/errorMessage";
 
-export function useMeta(supabase: any, setToast: (s: string) => void) {
+export function useMeta(supabase: any, notify: Notify) {
   const [cats, setCats] = useState<Category[]>([]);
   const [brs, setBrs] = useState<Brand[]>([]);
 
@@ -11,38 +12,38 @@ export function useMeta(supabase: any, setToast: (s: string) => void) {
       supabase.from("brands").select("id,name,slug,abbr").order("name"),
     ]);
 
-    if (cRes.error) setToast(cRes.error.message);
-    if (bRes.error) setToast(bRes.error.message);
+    if (cRes.error) notify(toUserMessage(cRes.error), "error");
+    if (bRes.error) notify(toUserMessage(bRes.error), "error");
 
     setCats((cRes.data ?? []) as Category[]);
     setBrs((bRes.data ?? []) as Brand[]);
-  }, [supabase, setToast]);
+  }, [supabase, notify]);
 
   const upsertCategory = useCallback(
     async (c: Partial<Category>) => {
       const name = (c.name ?? "").trim();
       const slug = (c.slug ?? "").trim();
-      if (!name || !slug) return setToast("Thiếu name/slug");
+      if (!name || !slug) return notify("Thiếu name/slug", "info");
 
       const abbr = (c.abbr ?? "").trim().toUpperCase().slice(0, 2);
 
-      // upsert dạng mảng để tránh lỗi overload TS
       const { error } = await supabase
         .from("categories")
         .upsert([{ name, slug, abbr: abbr ? abbr : null }], { onConflict: "slug" });
 
-      if (error) return setToast(error.message);
-      setToast("Đã lưu danh mục");
+      if (error) return notify(toUserMessage(error), "error");
+
+      notify("Đã lưu danh mục", "success");
       await loadMeta();
     },
-    [supabase, setToast, loadMeta]
+    [supabase, notify, loadMeta]
   );
 
   const upsertBrand = useCallback(
     async (b: Partial<Brand>) => {
       const name = (b.name ?? "").trim();
       const slug = (b.slug ?? "").trim();
-      if (!name || !slug) return setToast("Thiếu name/slug");
+      if (!name || !slug) return notify("Thiếu name/slug", "info");
 
       const abbr = (b.abbr ?? "").trim().toUpperCase().slice(0, 2);
 
@@ -50,11 +51,12 @@ export function useMeta(supabase: any, setToast: (s: string) => void) {
         .from("brands")
         .upsert([{ name, slug, abbr: abbr ? abbr : null }], { onConflict: "slug" });
 
-      if (error) return setToast(error.message);
-      setToast("Đã lưu hãng");
+      if (error) return notify(toUserMessage(error), "error");
+
+      notify("Đã lưu hãng", "success");
       await loadMeta();
     },
-    [supabase, setToast, loadMeta]
+    [supabase, notify, loadMeta]
   );
 
   return { cats, brs, loadMeta, upsertCategory, upsertBrand };

@@ -89,6 +89,7 @@ if (!cat?.id || !cat?.name || !cat?.slug) continue;
                   : badgeText ? badgeText
                   : isNew? "Mới"
                   : null;
+                  
     const meta = formatPackaging({
       packaging_override: row.packaging_override,
       package_type: row.package_type,
@@ -147,19 +148,19 @@ export default async function HomePage() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#0b2bbf]">
-                Sản phẩm theo danh mục
+                Sản phẩm theo các loại mặt hàng
               </h2>
               <p className="mt-1 text-sm text-[#0b2bbf]/70">
                 Chọn nhanh theo nhóm sản phẩm phổ biến.
               </p>
             </div>
 
-            <Link
+            {/* <Link
               href="/san-pham"
               className="text-sm font-semibold text-[#0b2bbf] hover:underline underline-offset-4"
             >
               Xem tất cả →
-            </Link>
+            </Link> */}
           </div>
          {/* Divider */}
           <div className="mt-6 h-px w-full bg-gradient-to-r from-transparent via-[#0b2bbf]/25 to-transparent" />

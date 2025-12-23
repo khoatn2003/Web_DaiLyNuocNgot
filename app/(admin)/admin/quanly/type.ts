@@ -1,5 +1,7 @@
 export type Category = { id: string; name: string; slug: string; abbr: string | null };
 export type Brand    = { id: string; name: string; slug: string; abbr: string | null };
+export type ToastType = "success" | "error" | "info";
+export type Notify = (message: string, type?: ToastType) => void;
 
 export type ProductRow = {
   id: string;

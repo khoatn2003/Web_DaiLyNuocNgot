@@ -4,7 +4,7 @@ import Link from "next/link";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, ShieldCheck, Loader2 } from "lucide-react";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -55,6 +55,24 @@ export default function AdminLogin() {
   }
 
   return (
+    <>
+     {loading && (
+      <div
+        className="fixed inset-0 z-[999] grid place-items-center bg-white/70 backdrop-blur-sm"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div className="flex flex-col items-center gap-3 rounded-2xl bg-white/80 px-6 py-5 shadow-xl ring-1 ring-black/5">
+          <Loader2 className="h-10 w-10 animate-spin text-[#0213b0]" />
+          <div className="text-sm font-medium text-slate-700">
+            Đang đăng nhập...
+          </div>
+          <div className="text-xs text-slate-500">
+            Vui lòng chờ trong giây lát
+          </div>
+        </div>
+      </div>
+    )}
     <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Brand / heading */}
@@ -105,7 +123,7 @@ export default function AdminLogin() {
 
                 <input
                   className="w-full rounded-xl bg-slate-50 pl-10 pr-12 py-3 text-sm text-slate-900 outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-[#0213b0]/40"
-                  placeholder="••••••••"
+                  placeholder="••••••••" 
                   type={showPass ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -140,7 +158,14 @@ export default function AdminLogin() {
               disabled={!canSubmit}
               className="w-full rounded-xl bg-[#0213b0] text-white py-3 font-semibold shadow hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
-              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <Loader2 className="animate-spin mr-2" size={18} />
+                  Đang đăng nhập...
+                </span>
+              ) : (
+                "Đăng nhập"
+              )}
             </button>
 
             {/* Back link */}
@@ -158,5 +183,6 @@ export default function AdminLogin() {
         </p>
       </div>
     </main>
+    </>
   );
 }

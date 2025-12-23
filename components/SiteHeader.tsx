@@ -210,6 +210,9 @@ export default function SiteHeader({
                           group-hover:visible group-hover:opacity-100 group-hover:translate-y-0
                           transition"
               >
+                <li className="bg-slate-50 text-[#0213b0] px-4 py-3 font-semibold">
+                  Ngành hàng
+                </li>
                 {i.children.map((c) => (
                   <li key={c.href}>
                     <Link

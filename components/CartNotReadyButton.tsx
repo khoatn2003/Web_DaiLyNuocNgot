@@ -70,17 +70,17 @@ export default function CartNotReadyButton({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-semibold text-[#0b2bbf]">
-                      Xin lỗi bạn 😥
+                      Xin lỗi quý khách 😥
                     </div>
                     <p className="mt-2 text-sm text-slate-700 leading-relaxed">
                       Hiện tại shop chưa triển khai tính năng giỏ hàng.
                       {productName ? (
                         <>
                           {" "}
-                          Bạn đang chọn: <b>{productName}</b>.
+                          Quý khách đang chọn: <b>{productName}</b>.
                         </>
                       ) : null}{" "}
-                      Bạn vui lòng nhắn Zalo hoặc gọi để mình báo giá và chốt đơn nhanh nhé!
+                      Quý khách vui lòng nhắn Zalo hoặc gọi để mình báo giá và chốt đơn nhanh nhé!
                     </p>
                   </div>
 

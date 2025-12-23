@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
 import { formatBrand, formatPackaging, slugify } from "@/lib/admin-utils";
 import MetaEditor from "./ui/MetaEditor";
-import type { Category, Brand, ProductRow, ImgRow } from "./type";
+import type { Category, Brand, ProductRow, ImgRow, ToastType } from "./type";
 import { useMeta } from "./hook/useMeta";
+import Toast from "./ui/Toast";
 // type Category = { id: string; name: string; slug: string; abbr: string | null };
 // type Brand    = { id: string; name: string; slug: string; abbr: string | null };
 
@@ -27,7 +28,7 @@ const UNIT_OPTIONS = [
 ];
 
 export default function AdminClient({ email }: { email: string }) {
-  const supabase = createSupabaseBrowser();
+  const supabase = useMemo(() => createSupabaseBrowser(), []);
   const router = useRouter();
 
   const [tab, setTab] = useState<"products" | "categories" | "brands">("products");
@@ -35,8 +36,9 @@ export default function AdminClient({ email }: { email: string }) {
   const [q, setQ] = useState("");
 
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
 
+  const [toast, setToast] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<ToastType>("success");
   //Lọc + Pagination
   const [filterCat, setFilterCat] = useState<string>("");   // category_id
   const [filterBrand, setFilterBrand] = useState<string>(""); // brand_id
@@ -50,8 +52,13 @@ export default function AdminClient({ email }: { email: string }) {
   // Images
   const [imgs, setImgs] = useState<ImgRow[]>([]);
   const [imgBusy, setImgBusy] = useState(false);
-  const { cats, brs, loadMeta, upsertCategory, upsertBrand } =
-  useMeta(supabase, (m) => setToast(m));
+
+  const notify = useCallback((message: string, type: ToastType = "info") => {
+  setToastType(type);
+  setToast(message);
+}, []);
+
+ const { loadMeta, upsertBrand, upsertCategory, cats, brs } = useMeta(supabase, notify);
   useEffect(() => {
     loadMeta();
     loadProducts();
@@ -88,7 +95,7 @@ useEffect(() => {
       .order("updated_at", { ascending: false });
 
     setBusy(false);
-    if (error) return setToast(error.message);
+    if (error) return setToastType("error"), setToast(error.message);
     setItems((data as any) ?? []);
   }
 
@@ -164,7 +171,7 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
       .order("is_primary", { ascending: false })
       .order("sort_order", { ascending: true });
 
-    if (error) return setToast(error.message);
+    if (error) return setToastType("error"), setToast(error.message);
     setImgs((data as any) ?? []);
   }
 
@@ -203,7 +210,7 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
 
     // nếu bật is_active mà chưa có code -> DB chặn; UI cũng chặn trước
     if (payload.is_active && (!form.code || form.code === "")) {
-      setToast("Không thể bật hiển thị khi chưa có mã code (hãy chọn danh mục + hãng trước).");
+      setToast("Không thể bật hiển thị khi chưa có mã code (hãy chọn danh mục + thương hiệu trước).");
       return;
     }
 
@@ -212,7 +219,11 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
       ? await supabase.from("products").update(payload).eq("id", form.id!)
       : await supabase.from("products").insert(payload);
 
-    if (error) return setToast(error.message);
+    if (error) {
+      setToastType("error");
+      setToast(error.message);
+      return;
+    }
 
     setToast(isEdit ? "Đã cập nhật sản phẩm" : "Đã tạo sản phẩm");
     setOpen(false);
@@ -222,7 +233,11 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
   async function removeProduct(id: string) {
     if (!confirm("Xoá sản phẩm?")) return;
     const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error) return setToast(error.message);
+    if (error) {
+      setToastType("error");
+      setToast(error.message);
+      return;
+    }
     setToast("Đã xoá");
     await loadProducts();
   }
@@ -280,15 +295,23 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
       .from("product_images")
       .update({ is_primary: false })
       .eq("product_id", productId);
-
-    if (e1) return setToast(e1.message);
-
+      
+      if (e1) {
+        setToastType("error");
+        setToast(e1.message);
+        return;
+      }
+   
     const { error: e2 } = await supabase
       .from("product_images")
       .update({ is_primary: true })
       .eq("id", imageId);
 
-    if (e2) return setToast(e2.message);
+   if (e2) {
+        setToastType("error");
+        setToast(e2.message);
+        return;
+      }
     await loadImages(productId);
     setToast("Đã đặt ảnh đại diện");
   }
@@ -298,11 +321,19 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
 
     // xoá DB row trước
     const { error: e1 } = await supabase.from("product_images").delete().eq("id", row.id);
-    if (e1) return setToast(e1.message);
+    if (e1) {
+        setToastType("error");
+        setToast(e1.message);
+        return;
+      }
 
     // xoá file trong storage (nếu policy cho phép)
     const { error: e2 } = await supabase.storage.from("product-images").remove([row.path]);
-    if (e2) setToast(`Đã xoá DB, nhưng xoá file lỗi: ${e2.message}`);
+    if (e2) {
+      setToastType("error");
+      setToast(`Đã xoá DB, nhưng xoá file lỗi: ${e2.message}`);
+      return; 
+    }
 
     await loadImages(row.product_id);
     setToast("Đã xoá ảnh");
@@ -323,8 +354,17 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
         thead: "bg-zinc-950 text-zinc-300",
         row: "border-t border-zinc-800",
         btnOutline: "border-zinc-800 hover:bg-zinc-900",
-        toast: "border-zinc-800 bg-zinc-900 text-zinc-100",
-        toastBtn: "text-zinc-300",
+          toast:
+          "border-white/10 bg-zinc-900/80 text-zinc-100 backdrop-blur",
+        toastBtn:
+          "rounded-xl px-3 py-1.5 bg-white/10 text-zinc-100 hover:bg-white/15",
+            // accents
+        toastSuccess: "border-emerald-400/25 bg-emerald-950/30 ring-1 ring-emerald-400/20",
+        toastError: "border-rose-400/25 bg-rose-950/30 ring-1 ring-rose-400/20",
+
+
+        toastBtnSuccess: "text-emerald-200",
+        toastBtnError: "text-rose-200",
         primaryBtn: "bg-white text-zinc-950 hover:opacity-95",
 
         // modal
@@ -350,10 +390,18 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
         thead: "bg-gray-50 text-gray-700",
         row: "border-t border-gray-200",
         btnOutline: "border-gray-200 hover:bg-gray-50",
-        toast: "border-gray-200 bg-white text-gray-900",
-        toastBtn: "text-gray-700",
+        toast:
+          "border-zinc-200 bg-white/90 text-zinc-900 backdrop-blur",
+        toastBtn:
+          "rounded-xl px-3 py-1.5 bg-black/5 text-zinc-800 hover:bg-black/10",
         primaryBtn: "bg-[#0213b0] text-white hover:opacity-95",
+        // accents
+        toastSuccess: "border-emerald-200 bg-emerald-50 ring-1 ring-emerald-500/10",
+        toastError: "border-rose-200 bg-rose-50 ring-1 ring-rose-500/10",
 
+
+        toastBtnSuccess: "text-emerald-700",
+        toastBtnError: "text-rose-700",
         // modal
         overlay: "bg-black/35",
         modal: "border-gray-200 bg-white text-gray-900",
@@ -366,6 +414,8 @@ const showingTo = total === 0 ? 0 : pageSize === "all" ? total : Math.min(total,
         success: "text-emerald-700",
         preview: "text-gray-700",
       };
+
+
 return ( 
   <div className={cls.page}>
     {/* Top bar */}
@@ -405,15 +455,15 @@ return (
         </NavButton>
 
         <NavButton theme={theme} active={tab === "categories"} onClick={() => setTab("categories")}>
-            Danh mục
+            Ngành hàng
         </NavButton>
 
         <NavButton theme={theme} active={tab === "brands"} onClick={() => setTab("brands")}>
-            Hãng
+            Thương hiệu
         </NavButton>
 
           <div className={`mt-3 text-xs ${cls.tip}`}>
-            Tip: sản phẩm chỉ bật hiển thị khi đã có <b>code</b> (chọn danh mục + hãng).
+            Tip: sản phẩm chỉ bật hiển thị khi đã có <b>code</b> (chọn ngành hàng + thương hiệu).
           </div>
         </div>
       </aside>
@@ -433,7 +483,7 @@ return (
               <div className="sm:ml-auto flex gap-2">
                 <input
                   className={`w-full sm:w-64 rounded-xl border p-2.5 outline-none ${cls.input}`}
-                  placeholder="Tìm theo tên / code / slug / hãng…"
+                  placeholder="Tìm theo tên / code / slug / thương hiệu…"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                 />
@@ -451,10 +501,11 @@ return (
                 value={filterCat}
                 onChange={(e) => setFilterCat(e.target.value)}
               >
-                <option value="">Tất cả danh mục</option>
+                <option value="">Tất cả ngành hàng</option>
                 {cats.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {(c.abbr ?? "--") + " • " + c.name}
+                    {/* {(c.abbr ?? "--") + " • " + c.name} */}
+                    {c.name}
                   </option>
                 ))}
               </select>
@@ -464,10 +515,11 @@ return (
                 value={filterBrand}
                 onChange={(e) => setFilterBrand(e.target.value)}
               >
-                <option value="">Tất cả hãng</option>
+                <option value="">Tất cả thương hiệu</option>
                 {brs.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {(b.abbr ?? "--") + " • " + b.name}
+                    {/* {(b.abbr ?? "--") + " • " + b.name} */}
+                    {b.name}
                   </option>
                 ))}
               </select>
@@ -591,7 +643,7 @@ return (
 
         {tab === "categories" && (
           <MetaEditor
-            title="Danh mục"
+            title="Ngành hàng"
             hint="Ví dụ: Bia (BI), Nước ngọt (NG)… Abbr 2 chữ IN HOA để sinh code."
             onSave={upsertCategory}
             theme={theme}
@@ -601,7 +653,7 @@ return (
 
         {tab === "brands" && (
           <MetaEditor
-            title="Hãng"
+            title="Thương hiệu"
             hint="Ví dụ: Sabeco (SA), Coca-Cola (CO)… Abbr 2 chữ IN HOA để sinh code."
             onSave={upsertBrand}
             theme={theme}
@@ -630,15 +682,15 @@ return (
 
     {/* Toast */}
     {toast && (
-      <div
-        className={`fixed bottom-4 left-1/2 -translate-x-1/2 rounded-xl border px-4 py-2 text-sm shadow ${cls.toast}`}
-      >
-        {toast}
-        <button className={`ml-3 ${cls.toastBtn}`} onClick={() => setToast(null)}>
-          OK
-        </button>
-      </div>
+      <Toast
+        message={toast}
+        onClose={() => setToast(null)}
+        duration={2600}
+        className={`${cls.toast} ${toastType === "success" ? cls.toastSuccess : cls.toastError}`}
+        buttonClassName={`${cls.toastBtn} ${toastType === "success" ? cls.toastBtnSuccess : cls.toastBtnError}`}
+      />
     )}
+
   </div>
 );
 
@@ -790,8 +842,7 @@ function ProductModal({
         className={`w-full rounded-xl border p-2.5 outline-none ${cls.field}`}
         placeholder="Tên sản phẩm"
         value={form.name ?? ""}
-        onChange={(e) =>
-          setForm({ ...form, name: e.target.value, slug: slugify(e.target.value) })
+        onChange={(e) => setForm({ ...form, name: e.target.value, slug: slugify(e.target.value) })
         }
       />
 
@@ -815,10 +866,11 @@ function ProductModal({
           value={form.category_id ?? ""}
           onChange={(e) => setForm({ ...form, category_id: e.target.value || null })}
         >
-          <option value="">— Danh mục —</option>
+          <option value="">— Ngành hàng —</option>
           {cats.map((c) => (
             <option key={c.id} value={c.id}>
               {c.abbr ?? "--"} • {c.name}
+              {/* {c.name} */}
             </option>
           ))}
         </select>
@@ -828,10 +880,11 @@ function ProductModal({
           value={form.brand_id ?? ""}
           onChange={(e) => setForm({ ...form, brand_id: e.target.value || null })}
         >
-          <option value="">— Hãng —</option>
+          <option value="">— Thương hiệu —</option>
           {brs.map((b) => (
             <option key={b.id} value={b.id}>
               {b.abbr ?? "--"} • {b.name}
+              {/* {b.name} */}
             </option>
           ))}
         </select>
@@ -896,7 +949,7 @@ function ProductModal({
 
         {!canPublish && (
           <span className={`text-xs ${cls.muted}`}>
-            (Chưa có code → chọn Danh mục + Hãng rồi lưu để sinh mã)
+            (Chưa có code → chọn Ngành hàng + Thương hiệu rồi lưu để sinh mã)
           </span>
         )}
       </div>
@@ -1027,7 +1080,7 @@ function ProductModal({
       <div className={`rounded-xl border p-3 ${cls.card2}`}>
         <div className="font-medium">Quy ước “không rối”</div>
         <ul className={`mt-2 list-disc pl-5 space-y-1 text-sm ${cls.muted}`}>
-          <li>Admin chỉ chọn hãng từ dropdown (không nhập brand text).</li>
+          <li>Admin chỉ chọn thương hiệu từ dropdown (không nhập brand text).</li>
           <li>Ảnh ưu tiên gallery (primary), fallback image_url (ẩn).</li>
           <li>Quy cách ưu tiên override → pack chuẩn.</li>
         </ul>

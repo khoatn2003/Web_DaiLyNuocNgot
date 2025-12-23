@@ -20,7 +20,7 @@ export default function SiteFooter({
   bank,
 }: FooterProps) {
   return (
-    <footer className="bg-[#123843] text-white">
+    <footer className="bg-[#171717] text-white">
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Cột 1: Địa chỉ + Hotline */}
