@@ -303,7 +303,7 @@ const onTouchEnd = (e: React.TouchEvent) => {
 
           <div className="mt-6 flex items-center justify-between gap-4 border-t border-[#0b2bbf]/10 pt-5">
             <label className="inline-flex items-center gap-2 text-sm text-[#0b2bbf]">
-              <span>{weightLabel}</span>
+              <span>{"Thương hiệu: " + product.brand?.name}</span>
             </label>
 
             <div className="text-right text-lg font-extrabold text-[#0b2bbf]">

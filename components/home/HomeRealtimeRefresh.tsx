@@ -20,6 +20,7 @@ export default function HomeRealtimeRefresh() {
       .on("postgres_changes", { event: "*", schema: "public", table: "products" }, refreshSoon)
       .on("postgres_changes", { event: "*", schema: "public", table: "product_images" }, refreshSoon) // nếu home dùng ảnh
       .on("postgres_changes", { event: "*", schema: "public", table: "categories" }, refreshSoon) // nếu home group theo category
+      .on("postgres_changes", { event: "*", schema: "public", table: "brands" }, refreshSoon)
       .subscribe();
 
     return () => {

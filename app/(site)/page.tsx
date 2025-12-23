@@ -113,7 +113,7 @@ if (!cat?.id || !cat?.name || !cat?.slug) continue;
     if (!byCat.has(cat.id)) {
       byCat.set(cat.id, {
         title: cat.name,
-        href: `/san-pham?cat=${cat.slug}`,
+        href: `/san-pham/danh-muc/${cat.slug}`,
         products: [],
       });
     }
@@ -143,7 +143,7 @@ export default async function HomePage() {
       <BannerSlider />
       {/* Hero */} 
      {/* Products by Category (giống form Vinamilk) */}
-      <section className="bg-[#fbf7ea] border-y border-[#0b2bbf]/30">
+      <section className="bg-[#fffff2] border-y border-[#0b2bbf]/30">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -238,6 +238,7 @@ function ProductCard({
 }) {
   const out = p.badge === "Hết hàng" || p.in_stock === false; // an toàn 2 kiểu   
   return (
+    <>
     <div
       className={[
         "group relative h-full w-full border-b border-[#0b2bbf]/15 py-6 transition-all duration-300",
@@ -360,7 +361,8 @@ function ProductCard({
         </div>
       </div>
     </div>
-    
+    <HomeRealtimeRefresh></HomeRealtimeRefresh>
+    </>
   );
 }
 

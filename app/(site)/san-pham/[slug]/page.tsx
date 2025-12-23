@@ -6,6 +6,7 @@ import ProductDetailClient from "./ProductDetailClient";
 import { SITE } from "@/lib/site";
 // import { useMemo } from "react";
 import type { Metadata } from "next";
+import HomeRealtimeRefresh from "@/components/home/HomeRealtimeRefresh";
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
@@ -158,6 +159,8 @@ export default async function ProductDetailPage({
           zalo={SITE.zalo}
         />
       </div>
+
+      <HomeRealtimeRefresh></HomeRealtimeRefresh>
     </main>
   );
 }
