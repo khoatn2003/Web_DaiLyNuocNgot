@@ -58,7 +58,8 @@ export default function AdminClient({ email }: { email: string }) {
   setToast(message);
 }, []);
 
- const { loadMeta, upsertBrand, upsertCategory, cats, brs } = useMeta(supabase, notify);
+const { loadMeta, saveBrand, saveCategory, deleteBrand, deleteCategory, cats, brs } =
+  useMeta(supabase, notify);
   useEffect(() => {
     loadMeta();
     loadProducts();
@@ -645,17 +646,20 @@ return (
           <MetaEditor
             title="Ngành hàng"
             hint="Ví dụ: Bia (BI), Nước ngọt (NG)… Abbr 2 chữ IN HOA để sinh code."
-            onSave={upsertCategory}
+            onSave={saveCategory}
+            onDelete={deleteCategory}
             theme={theme}
-
+            items={cats}
           />
         )}
 
         {tab === "brands" && (
           <MetaEditor
             title="Thương hiệu"
-            hint="Ví dụ: Sabeco (SA), Coca-Cola (CO)… Abbr 2 chữ IN HOA để sinh code."
-            onSave={upsertBrand}
+            hint="Ví dụ: Sabeco (SA), Coca-Cola (CO)…"
+            onSave={saveBrand}
+            onDelete={deleteBrand}
+            items={brs}
             theme={theme}
           />
         )}

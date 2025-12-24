@@ -4,7 +4,6 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 import { formatPackaging } from "@/lib/admin-utils";
 import { getOne, pickPrimaryImage, normalizeSearchParams } from "@/lib/sanpham-utils";
 import Pagination from "@/components/Pagination";
-import HomeRealtimeRefresh from "@/components/home/HomeRealtimeRefresh";
 import SortSelect from "./danh-muc/[slug]/sort-select";
 import MobileFiltersSheetSanPham from "@/components/san-pham/danh-muc/MobileFiltersSheetSanPham";
 // import SortSelect from "@/components/SortSelect"; // nếu bạn đã tạo component này
@@ -521,7 +520,6 @@ export default async function ProductsPage({
           </section>
         </div>
       </div>
-      <HomeRealtimeRefresh></HomeRealtimeRefresh>
     </main>
   );
 }

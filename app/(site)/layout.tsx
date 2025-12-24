@@ -1,6 +1,7 @@
 import SiteHeader from "@/components/SiteHeader";
 import FloatingContact from "@/components/FloatingContact";
 import SiteFooter from "@/components/SiteFooter";
+import RealtimeRefresh from "@/components/home/RealtimeRefresh";
 
 const phone = "0392048571";
 const zaloLink = `https://zalo.me/${phone}`;
@@ -11,6 +12,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <SiteHeader phone={phone} zaloLink={zaloLink} />
       {children}
       <FloatingContact />
+      <RealtimeRefresh></RealtimeRefresh>
       <SiteFooter
         address="Trịnh Nguyễn - Châu Khê - Từ Sơn- Bắc Ninh."
         hotline="0392048571"

@@ -19,45 +19,91 @@ export function useMeta(supabase: any, notify: Notify) {
     setBrs((bRes.data ?? []) as Brand[]);
   }, [supabase, notify]);
 
-  const upsertCategory = useCallback(
-    async (c: Partial<Category>) => {
+  const saveCategory = useCallback(
+    async (c: Partial<Category>): Promise<boolean> => {
+      const id = c.id ?? null;
       const name = (c.name ?? "").trim();
       const slug = (c.slug ?? "").trim();
-      if (!name || !slug) return notify("Thiếu name/slug", "info");
+      if (!name || !slug) {
+        notify("Thiếu name/slug", "info");
+        return false;
+      }
 
       const abbr = (c.abbr ?? "").trim().toUpperCase().slice(0, 2);
+      const data = { name, slug, abbr: abbr ? abbr : null };
 
-      const { error } = await supabase
-        .from("categories")
-        .upsert([{ name, slug, abbr: abbr ? abbr : null }], { onConflict: "slug" });
+      const res = id
+        ? await supabase.from("categories").update(data).eq("id", id)
+        : await supabase.from("categories").insert(data);
 
-      if (error) return notify(toUserMessage(error), "error");
+      if (res.error) {
+        notify(toUserMessage(res.error), "error");
+        return false;
+      }
 
-      notify("Đã lưu danh mục", "success");
+      notify(id ? "Đã cập nhật ngành hàng" : "Đã thêm ngành hàng", "success");
       await loadMeta();
+      return true;
     },
     [supabase, notify, loadMeta]
   );
 
-  const upsertBrand = useCallback(
-    async (b: Partial<Brand>) => {
+  const saveBrand = useCallback(
+    async (b: Partial<Brand>): Promise<boolean> => {
+      const id = b.id ?? null;
       const name = (b.name ?? "").trim();
       const slug = (b.slug ?? "").trim();
-      if (!name || !slug) return notify("Thiếu name/slug", "info");
+      if (!name || !slug) {
+        notify("Thiếu name/slug", "info");
+        return false;
+      }
 
       const abbr = (b.abbr ?? "").trim().toUpperCase().slice(0, 2);
+      const data = { name, slug, abbr: abbr ? abbr : null };
 
-      const { error } = await supabase
-        .from("brands")
-        .upsert([{ name, slug, abbr: abbr ? abbr : null }], { onConflict: "slug" });
+      const res = id
+        ? await supabase.from("brands").update(data).eq("id", id)
+        : await supabase.from("brands").insert(data);
 
-      if (error) return notify(toUserMessage(error), "error");
+      if (res.error) {
+        notify(toUserMessage(res.error), "error");
+        return false;
+      }
 
-      notify("Đã lưu hãng", "success");
+      notify(id ? "Đã cập nhật thương hiệu" : "Đã thêm thương hiệu", "success");
       await loadMeta();
+      return true;
     },
     [supabase, notify, loadMeta]
   );
 
-  return { cats, brs, loadMeta, upsertCategory, upsertBrand };
+  const deleteCategory = useCallback(
+    async (id: string): Promise<boolean> => {
+      const { error } = await supabase.from("categories").delete().eq("id", id);
+      if (error) {
+        notify(toUserMessage(error), "error"); // nếu bị FK constraint sẽ báo ở đây
+        return false;
+      }
+      notify("Đã xóa ngành hàng", "success");
+      await loadMeta();
+      return true;
+    },
+    [supabase, notify, loadMeta]
+  );
+
+  const deleteBrand = useCallback(
+    async (id: string): Promise<boolean> => {
+      const { error } = await supabase.from("brands").delete().eq("id", id);
+      if (error) {
+        notify(toUserMessage(error), "error");
+        return false;
+      }
+      notify("Đã xóa thương hiệu", "success");
+      await loadMeta();
+      return true;
+    },
+    [supabase, notify, loadMeta]
+  );
+
+  return { cats, brs, loadMeta, saveCategory, saveBrand, deleteCategory, deleteBrand };
 }

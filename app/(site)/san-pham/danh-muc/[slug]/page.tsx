@@ -3,7 +3,6 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { formatPackaging } from "@/lib/admin-utils";
 import SortSelect from "./sort-select";
-import HomeRealtimeRefresh from "@/components/home/HomeRealtimeRefresh";
 import { SITE } from "@/lib/site";
 import { Metadata } from "next";
 import Pagination from "@/components/Pagination";
@@ -474,8 +473,6 @@ export default async function CategoryPage({
     </div>
   </div>
 </main>
-
-<HomeRealtimeRefresh ></HomeRealtimeRefresh>
 </>
 );
 

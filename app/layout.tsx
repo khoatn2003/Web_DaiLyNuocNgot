@@ -41,6 +41,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import FloatingContact from "@/components/FloatingContact";
 import { SITE } from "@/lib/site";
+
 // import FloatingContact from "@/components/FloatingContact";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -63,5 +64,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
       </body>
     </html>
+    
   );
 }

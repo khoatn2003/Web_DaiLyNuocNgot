@@ -1,13 +1,11 @@
 import BannerSlider from "@/components/home/Banner";
-import SiteHeader from "@/components/SiteHeader";
-import { SITE } from "@/lib/site";
 import Image from "next/image";
 import Link from "next/link";
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { formatPackaging } from "@/lib/admin-utils";
-import HomeRealtimeRefresh from "@/components/home/HomeRealtimeRefresh";
+import { unstable_noStore as noStore } from "next/cache";
 import CartNotReadyButton from "@/components/CartNotReadyButton";
-export const revalidate = 60;
+
 type UIProduct = {
   badge: string | null;
   name: string;
@@ -122,20 +120,24 @@ if (!cat?.id || !cat?.name || !cat?.slug) continue;
   }
 
   // Mỗi danh mục lấy 3 sản phẩm để giống UI home
-  const blocks = Array.from(byCat.values()).map((b) => ({
-    ...b,
-    products: b.products.slice(0, 3),
-  }));
+    const blocksAll = Array.from(byCat.values());
 
-  // Home thường chỉ show 2-3 danh mục
-  return blocks.slice(0, 3);
+    blocksAll.sort((a, b) => b.products.length - a.products.length);
+
+    const blocks = blocksAll.slice(0, 3).map((b) => ({
+      ...b,
+      products: b.products.slice(0, 3),
+    }));
+
+    return blocks;
+
 }
 
 export default async function HomePage() {
- const categoryBlocks = await getHomeCategoryBlocks();
+  noStore();
+  const categoryBlocks = await getHomeCategoryBlocks();
   return (
     <>
-    <HomeRealtimeRefresh />
     {/* Header */}
     {/* <SiteHeader phone={phone} zaloLink={zaloLink} /> */}
     <main className="min-h-screen bg-white">
@@ -333,7 +335,6 @@ function ProductCard({
         </div>
       </div>
     </div>
-    <HomeRealtimeRefresh></HomeRealtimeRefresh>
     </>
   );
 }

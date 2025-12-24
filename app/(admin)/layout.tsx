@@ -1,6 +1,8 @@
 import SiteHeader from "@/components/SiteHeader";
 import FloatingContact from "@/components/FloatingContact";
 import SiteFooter from "@/components/SiteFooter";
+import { Home } from "lucide-react";
+import HomeRealtimeRefresh from "@/components/home/RealtimeRefresh";
 
 const phone = "0392048571";
 const zaloLink = `https://zalo.me/${phone}`;

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
 
-export default function HomeRealtimeRefresh() {
+export default function RealtimeRefresh() {
   const router = useRouter();
   const supabase = useMemo(() => createSupabaseBrowser(), []);
   const t = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -16,10 +16,10 @@ export default function HomeRealtimeRefresh() {
     };
 
     const channel = supabase
-      .channel("home-realtime")
+      .channel("site-realtime") // đổi tên chung
       .on("postgres_changes", { event: "*", schema: "public", table: "products" }, refreshSoon)
-      .on("postgres_changes", { event: "*", schema: "public", table: "product_images" }, refreshSoon) // nếu home dùng ảnh
-      .on("postgres_changes", { event: "*", schema: "public", table: "categories" }, refreshSoon) // nếu home group theo category
+      .on("postgres_changes", { event: "*", schema: "public", table: "product_images" }, refreshSoon)
+      .on("postgres_changes", { event: "*", schema: "public", table: "categories" }, refreshSoon)
       .on("postgres_changes", { event: "*", schema: "public", table: "brands" }, refreshSoon)
       .subscribe();
 
