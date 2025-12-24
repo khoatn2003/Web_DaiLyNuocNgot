@@ -1,6 +1,6 @@
 export const SITE = {
   author : "Đại lý nước ngọt TIẾN MẠO",
-  name: "Đại lý nước ngọt Châu Khê – Từ Sơn – Bắc Ninh",
+  name: "Đại lý nước ngọt Tiến Mạo",
   address: "Châu Khê, Từ Sơn, Bắc Ninh",
   phone: "0392048571",
   zalo: "0392048571", // thường dùng số điện thoại

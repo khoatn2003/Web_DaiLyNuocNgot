@@ -304,34 +304,6 @@ function ProductCard({
             <h3 className="text-base md:text-lg font-extrabold tracking-tight text-[#0b2bbf]">
               {p.name}
             </h3>
-
-            {/* <button
-              type="button"
-              disabled={out}
-              className={[
-                "p-2 rounded-full text-[#0b2bbf] transition",
-                out
-                  ? "opacity-40 cursor-not-allowed"
-                  : "hover:bg-[#0b2bbf]/10",
-              ].join(" ")}
-              aria-label={out ? "Hết hàng" : "Thêm vào giỏ"}
-              title={out ? "Hết hàng" : "Thêm vào giỏ"}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M6 7h15l-1.5 9h-12L6 7Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M6 7 5 3H2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button> */}
             <CartNotReadyButton disabled={out} productName={p.name} />
 
           </div>

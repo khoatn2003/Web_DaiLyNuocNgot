@@ -4,8 +4,36 @@ import { createSupabaseServer } from "@/lib/supabase/server";
 import { formatPackaging } from "@/lib/admin-utils";
 import SortSelect from "./sort-select";
 import HomeRealtimeRefresh from "@/components/home/HomeRealtimeRefresh";
+import { SITE } from "@/lib/site";
+import { Metadata } from "next";
+import Pagination from "@/components/Pagination";
+import MobileFiltersSheet from "@/components/san-pham/danh-muc/MobileFiltersSheet";
 
 const PAGE_SIZE = 9; // giống layout ảnh (3 cột x 3 hàng) bạn đổi tuỳ ý
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+
+  const { slug } = await params;
+  const supabase = await createSupabaseServer();
+
+  const { data: p } = await supabase
+    .from("categories")
+    .select("name")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!p) {
+    return {
+      title: "Không tìm thấy sản phẩm",
+    };
+  }
+
+  return {
+    title: `${p.name} | ${SITE.author}`,
+    description: `Trang ngành hàng ${p.name} của ${SITE.name}`,
+  };
+}
 
 function formatVND(n: number) {
   return `${n.toLocaleString("vi-VN")}đ`;
@@ -41,29 +69,6 @@ function pickPrimaryImage(images: any[] | null | undefined) {
     return (a?.sort_order ?? 0) - (b?.sort_order ?? 0);
   });
   return list[0]?.public_url ?? "https://placehold.co/600x600";
-}
-
-function pageItems(totalPages: number, page: number) {
-  // 1 ... (page-1) page (page+1) ... total
-  const items: (number | "...")[] = [];
-  const add = (x: number | "...") => items.push(x);
-
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) add(i);
-    return items;
-  }
-
-  add(1);
-  if (page > 3) add("...");
-
-  const start = Math.max(2, page - 1);
-  const end = Math.min(totalPages - 1, page + 1);
-  for (let i = start; i <= end; i++) add(i);
-
-  if (page < totalPages - 2) add("...");
-  add(totalPages);
-
-  return items;
 }
 
 export default async function CategoryPage({
@@ -246,8 +251,17 @@ export default async function CategoryPage({
         <h1 className="text-4xl font-extrabold tracking-tight lg:text-6xl">{cat.name}</h1>
         <span className="mt-2 text-lg font-semibold opacity-80 lg:mt-4">{total}</span>
       </div>
-
-      <div className="lg:mt-0">
+      
+      <MobileFiltersSheet
+        basePath={basePath}
+        sp={sp}
+        catSlug={cat.slug}
+        allCats={allCats}
+        brands={brands}
+        volOptions={volOptions}
+        sort={sort}
+      />
+      <div className="hidden lg:block">
         <SortSelect basePath={basePath} current={sp} value={sort} />
       </div>
     </div>
@@ -256,7 +270,7 @@ export default async function CategoryPage({
     <div className="grid grid-cols-1 gap-10 lg:grid-cols-4 lg:items-start">
       {/* LEFT FILTERS */}
        {/* <aside className="lg:col-span-1 lg:max-w-[320px] lg:w-full"> */}
-       <aside className="lg:col-span-1 lg:sticky lg:top-[72px] lg:max-h-[calc(100vh-90px)] lg:overflow-auto self-start">
+       <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-[72px] lg:max-h-[calc(100vh-90px)] lg:overflow-auto self-start">
         {/* Mobile header nhỏ gọn */}
         <div className="mb-3 rounded-2xl border border-[#0b2bbf]/15 bg-white/50 px-4 py-3 lg:hidden">
           <div className="text-sm font-extrabold">Bộ lọc</div>
@@ -266,7 +280,7 @@ export default async function CategoryPage({
         {/* Khối filter: style gọn như hình */}
         <div className="rounded-2xl border border-[#0b2bbf]/10 bg-transparent">
           {/* Danh mục */}
-          <details open className="border-b border-[#0b2bbf]/10 px-4 py-3">
+          <details className="border-b border-[#0b2bbf]/10 px-4 py-3">
             <summary className="flex cursor-pointer list-none items-center justify-between py-2 font-semibold">
               <span>Danh mục</span>
               <span className="opacity-70">▾</span>
@@ -288,7 +302,7 @@ export default async function CategoryPage({
           </details>
 
           {/* Thương hiệu */}
-          <details open className="border-b border-[#0b2bbf]/10 px-4 py-3">
+          <details className="border-b border-[#0b2bbf]/10 px-4 py-3">
             <summary className="flex cursor-pointer list-none items-center justify-between py-2 font-semibold">
               <span>Thương hiệu</span>
               <span className="opacity-70">▾</span>
@@ -321,7 +335,7 @@ export default async function CategoryPage({
           </details>
 
           {/* Thể tích / Khối lượng */}
-          <details open className="border-b border-[#0b2bbf]/10 px-4 py-3">
+          <details className="border-b border-[#0b2bbf]/10 px-4 py-3">
             <summary className="flex cursor-pointer list-none items-center justify-between py-2 font-semibold">
               <span>Thể tích / Khối lượng</span>
               <span className="opacity-70">▾</span>
@@ -354,115 +368,108 @@ export default async function CategoryPage({
           </details>
 
           {/* Phương thức giao hàng */}
-          <details open className="px-4 py-3">
+          <details className="px-4 py-3">
             <summary className="flex cursor-pointer list-none items-center justify-between py-2 font-semibold">
               <span>Phương thức giao hàng</span>
               <span className="opacity-70">▾</span>
             </summary>
-            <div className="pt-2 flex flex-wrap gap-2">
-              <Link
-                href={buildHref(basePath, sp, { delivery: null, page: "1" })}
-                className={[
-                  "rounded-full border px-3 py-1 text-sm font-semibold",
-                  sp.delivery ? "border-[#0b2bbf]/15 bg-white/50" : "border-[#0b2bbf]/30 bg-white",
-                ].join(" ")}
-              >
-                Tất cả
-              </Link>
-              {deliveryOptions.map((d) => (
-                <Link
-                  key={d.key}
-                  href={buildHref(basePath, sp, { delivery: d.key, page: "1" })}
-                  className={[
-                    "rounded-full border px-3 py-1 text-sm font-semibold",
-                    sp.delivery === d.key
-                      ? "border-[#0b2bbf]/30 bg-white"
-                      : "border-[#0b2bbf]/15 bg-white/50 hover:bg-white",
-                  ].join(" ")}
-                >
-                  {d.label}
-                </Link>
-              ))}
+
+            <div className="pt-3 space-y-2 text-sm text-[#0b2bbf]">
+              <p>
+                🚚 Vận chuyển đến tận nơi trong thời gian sớm nhât,
+                cho phép kiểm tra hàng trước khi thanh toán.
+              </p>
             </div>
           </details>
+
         </div>
       </aside>
-
+      
       {/* RIGHT PRODUCTS */}
       <section className="lg:col-span-3 min-w-0">
         {/* Grid kiểu "kẻ line" gọn như hình */}
+        {/* Grid kiểu "kẻ line" gọn như hình (mobile 2 cột, lg 3 cột) */}
         <div
           className={[
-            "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0",
+            "grid grid-cols-2 lg:grid-cols-3 gap-0",
             "border-t border-[#0b2bbf]/10",
-            // kẻ line dọc theo cột (sm=2, lg=3)
-            "sm:[&>*]:border-r sm:[&>*]:border-[#0b2bbf]/10 sm:[&>*:nth-child(2n)]:border-r-0",
-            "lg:[&>*:nth-child(3n)]:border-r-0",
+            // Mobile (2 cột): kẻ line dọc, bỏ border-r ở cột 2
+            "[&>*]:border-r [&>*]:border-[#0b2bbf]/10 [&>*:nth-child(2n)]:border-r-0",
+            // LG (3 cột): override lại rule 2 cột và bỏ border-r ở cột 3
+            "lg:[&>*:nth-child(2n)]:border-r lg:[&>*:nth-child(3n)]:border-r-0",
           ].join(" ")}
         >
           {products.map((p) => (
             <Link
               key={p.id}
               href={`/san-pham/${p.slug}`}
-              className="group border-b border-[#0b2bbf]/10 px-4 py-8 transition hover:bg-white/35"
+              className="group border-b border-[#0b2bbf]/10 px-3 py-5 sm:px-4 sm:py-8 transition hover:bg-white/35"
             >
-              {/* Badge */}
-              {/* <div className="h-6">
-                {!p.in_stock ? (
-                  <span className="inline-flex rounded-md bg-rose-100 px-2 py-1 text-[11px] font-extrabold text-rose-700">
-                    Hết hàng
-                  </span>
-                ) : p.badge ? (
-                  <span className="inline-flex rounded-md bg-white px-2 py-1 text-[11px] font-extrabold text-[#0b2bbf] ring-1 ring-[#0b2bbf]/15">
-                    {p.badge}
-                  </span>
-                ) : null}
-              </div> */}
-
               {/* Image */}
-              <div className="mx-auto mt-6 flex h-[220px] items-center justify-center">
-                <img src={p.img} alt={p.name} className="h-full w-auto object-contain" />
+              <div className="mx-auto mt-4 sm:mt-6 flex h-[150px] sm:h-[220px] items-center justify-center">
+                <img
+                  src={p.img}
+                  alt={p.name}
+                  className="h-full w-auto object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+                  loading="lazy"
+                />
               </div>
 
               {/* Content */}
-              <div className="mt-6">
-                <div className="text-xs font-semibold opacity-70">{p.brandName || " "}</div>
+              <div className="mt-4 sm:mt-6">
+                <div className="text-[10px] sm:text-xs font-semibold opacity-70 line-clamp-1">
+                  {p.brandName || " "}
+                </div>
 
-                <div className="mt-1 flex items-start justify-between gap-3">
-                  <h3 className="text-xl font-extrabold leading-tight group-hover:underline">
+                <div className="mt-1 flex items-start justify-between gap-2">
+                  <h3 className="text-base sm:text-xl font-extrabold leading-snug group-hover:underline line-clamp-2">
                     {p.name}
                   </h3>
 
                   {/* icon nhỏ (tuỳ bạn thay icon cart) */}
-                  <span className="mt-1 inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#0b2bbf]/15 bg-white/60 opacity-80 group-hover:opacity-100">
+                  <span className="mt-0.5 inline-flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-md border border-[#0b2bbf]/15 bg-white/60 opacity-80 group-hover:opacity-100">
                     +
                   </span>
                 </div>
 
                 {p.desc ? (
-                  <div className="mt-2 line-clamp-2 text-sm opacity-70">{p.desc}</div>
+                  <div className="mt-2 line-clamp-2 text-xs sm:text-sm opacity-70 leading-relaxed">
+                    {p.desc}
+                  </div>
                 ) : (
-                  <div className="mt-2 h-[40px]" />
+                  <div className="mt-2 h-[32px] sm:h-[40px]" />
                 )}
 
-                <div className="mt-3 flex items-center justify-between gap-4">
-                  <div className="text-sm font-semibold opacity-80">{p.packText || " "}</div>
-                  <div className="text-right text-lg font-extrabold">{p.priceText}</div>
+                <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
+                  <div className="text-xs sm:text-sm font-semibold opacity-80 line-clamp-1">
+                    {p.packText || " "}
+                  </div>
+                  <div className="text-left sm:text-right text-base sm:text-lg font-extrabold">
+                    {p.priceText}
+                  </div>
                 </div>
               </div>
             </Link>
           ))}
         </div>
 
-        {/* Pagination (giữ logic bạn đang có, chỉ đổi style cho giống hình) */}
         {totalPages > 1 ? (
-          <div className="mt-8 flex items-center justify-center">
-            <ul className="flex items-center gap-2 text-sm font-semibold" aria-label="Pagination">
-              {/* ví dụ bạn render pages: prev / numbers / next */}
-              {/* chỉ cần bọc mỗi item bằng class như dưới */}
-            </ul>
-          </div>
-        ) : null}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          basePath={basePath}
+          params={{
+            // giữ lại tất cả filter đang dùng trên trang này
+            ...(sp.brand ? { brand: sp.brand } : {}),
+            ...(sp.sort ? { sort: sp.sort } : {}),
+            ...(sp.vol ? { vol: sp.vol } : {}),
+            ...(sp.delivery ? { delivery: sp.delivery } : {}),
+            // nếu có search trong category page thì thêm vào đây
+            ...(sp.search ? { search: sp.search } : {}),
+          }}
+        />
+      ) : null}
+
       </section>
     </div>
   </div>

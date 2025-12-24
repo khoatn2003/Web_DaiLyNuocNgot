@@ -50,7 +50,7 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: SITE.name,
-  description: "Website giới thiệu sản phẩm – liên hệ qua điện thoại hoặc Zalo.",
+  description: "Đại lý nước ngọt chính hãng Từ Sơn – Bắc Ninh, Aquafina, Red Bull đa dạng, giao nhanh, hỗ trợ đặt hàng nhanh qua Zalo hoặc điện thoại.",
    icons: {
     icon: "/icon.png",
     apple: "/icon.png",}
