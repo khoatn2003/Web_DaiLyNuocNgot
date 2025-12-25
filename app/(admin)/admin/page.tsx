@@ -11,7 +11,7 @@ export default async function AdminPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("is_admin")
+    .select("is_admin, full_name")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -28,5 +28,5 @@ export default async function AdminPage() {
     );
   }
 
-  return <AdminClient email={user.email ?? ""} />;
+  return <AdminClient name={profile.full_name ?? ""} email={user.email ?? ""} />;
 }

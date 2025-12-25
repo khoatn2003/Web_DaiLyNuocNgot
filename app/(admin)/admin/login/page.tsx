@@ -30,7 +30,7 @@ export default function AdminLogin() {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
-        password,
+        password: password.trim(),
       });
 
       if (error) {
@@ -168,12 +168,21 @@ export default function AdminLogin() {
               )}
             </button>
 
-            {/* Back link */}
+            {/* Back link
             <div className="pt-2 text-center text-sm text-slate-600">
               <Link href="/" className="hover:underline underline-offset-4">
                 ← Về trang chủ
               </Link>
-            </div>
+            </div> */}
+            <div className="pt-2 text-center text-sm text-slate-600">
+            <div />
+            <Link
+              href="/auth/forgot"
+              className="text-[#0213b0] hover:underline underline-offset-4"
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
           </form>
         </div>
 

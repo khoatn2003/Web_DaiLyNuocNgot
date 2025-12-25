@@ -1,5 +1,6 @@
 "use client";
-
+import Link from "next/link";
+import { User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
@@ -27,7 +28,7 @@ const UNIT_OPTIONS = [
   { value: "goi", label: "Gói" },
 ];
 
-export default function AdminClient({ email }: { email: string }) {
+export default function AdminClient({ name, email }: { name: string; email: string }) { 
   const supabase = useMemo(() => createSupabaseBrowser(), []);
   const router = useRouter();
 
@@ -66,7 +67,7 @@ const { loadMeta, saveBrand, saveCategory, deleteBrand, deleteCategory, cats, br
         // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-const [theme, setTheme] = useState<"dark" | "light">("dark");
+const [theme, setTheme] = useState<"light" | "dark">("light");
 useEffect(() => {
   const saved = localStorage.getItem("admin_theme");
   if (saved === "light" || saved === "dark") setTheme(saved);
@@ -425,8 +426,18 @@ return (
         <div className="font-semibold">Quản trị viên • Đại lý nước ngọt</div>
 
         <div className={`ml-auto flex items-center gap-2 text-sm ${cls.muted}`}>
-          <span className="hidden sm:inline">{email}</span>
+          <span className="hidden sm:inline font-medium">
+            {name?.trim() ? name : email}
+          </span>
 
+          <Link
+            href="/admin/account"
+            className={`inline-flex items-center justify-center rounded-lg border p-2 ${cls.btnOutline}`}
+            title="Trang cá nhân"
+            aria-label="Trang cá nhân"
+          >
+            <User size={18} />
+          </Link>
           {/* Toggle theme */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
