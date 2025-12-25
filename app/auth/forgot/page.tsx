@@ -20,7 +20,7 @@ export default function AdminForgotPage() {
       const origin = window.location.origin;
 
       // Quan trọng: redirectTo nên trỏ về /auth/callback để exchange code -> set cookie SSR
-      const redirectTo = `${origin}/auth/callback?next=/account/update-password`;
+      const redirectTo = `${origin}/auth/callback?next=/auth/update-password`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo,
