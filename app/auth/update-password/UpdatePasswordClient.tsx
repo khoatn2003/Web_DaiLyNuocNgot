@@ -29,7 +29,7 @@ export default function UpdatePasswordClient() {
       setPw1("");
       setPw2("");
       setMsg("Đã cập nhật mật khẩu. Bạn có thể tiếp tục sử dụng tài khoản.");
-      router.replace("/account");
+      router.replace("/admin");
       router.refresh();
     } catch (e: any) {
       setMsg(e?.message ?? "Không đổi được mật khẩu.");
